@@ -1,12 +1,12 @@
 $(async () => {
-    setup()
+    setupUI()
 
     // story.canvas = await loadObsidianCanvas("C:/Users/usuario/Documents/obsidian/brainlet/UFRGS/2024-02/SPM/Teste fluxograma.canvas")
     // backstory.canvas = await loadObsidianCanvas("C:/Users/usuario/Documents/obsidian/brainlet/UFRGS/2024-02/SPM/backstory.canvas")
     story.canvas = await loadObsidianCanvas("/story.json")
     backstory.canvas = await loadObsidianCanvas("/backstory.json")
     
-    // story.passages = loadPassages(story.canvas)
+    story.passages = loadPassages(story.canvas)
     backstory.passages = loadPassages(backstory.canvas)
     
     write(backstory.start, true)
@@ -25,7 +25,7 @@ const backstory = {
 
 let history = []
 
-function setup() {
+function setupUI() {
     // Image visualization
     $('img').on('click', e => {
         const src = e.currentTarget.src
@@ -46,20 +46,21 @@ async function loadObsidianCanvas(path) {
 }
 
 function loadPassages(canvas) {
-    const types = {
-        "4": "out", // enviada
-        "3": "narrator",
-        "1": "in", // recebida
-        "5": "image",
-        "?": "audio",
+    const defs = {
+        "4": { type: "out", classes: "msg msg-out" }, // enviada
+        "3": { type: "narrator", classes: "info-box" },
+        "1": { type: "in", classes: "msg msg-in" }, // recebida
+        "5": { type: "image", classes: "" },
+        "?": { type: "audio", classes: "" },
     }
 
     const passages = canvas.nodes.map(node => {
         return {
             id: node.id,
             message: passageMessage(node),
-            type: types[node.color],
-            next: passageLinks(node, canvas.edges)
+            type: defs[node.color].type,
+            next: passageLinks(node, canvas.edges),
+            classes: defs[node.color].classes
         }
     })
 
@@ -99,8 +100,8 @@ function passageLinks(passage, allLinks) {
     }).filter(result => result !== undefined);
 }
 
-function write(passageId, backstory) {
-
+function write(passages) {
+    passages.forEach(entry => mountMessage($(e.target).html(), entry.classes))
 }
 
 function sendMessage(e) {
