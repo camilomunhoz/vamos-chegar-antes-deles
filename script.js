@@ -53,13 +53,16 @@ function loadPassages(canvas) {
     }
 
     const passages = canvas.nodes.map(node => {
+        if (node.type === 'group') {
+            return
+        }
         return {
             id: node.id,
             message: passageMessage(node),
             type: types[node.color],
             next: passageLinks(node, canvas.edges),
         }
-    })
+    }).filter(result => result !== null)
 
     return passages
 }
