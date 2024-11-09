@@ -84,8 +84,9 @@ html, body {
 .chat-box-info {
     background: #202C33;
     display: block;
-    margin: 4px auto 0 auto;
+    margin: 4px auto 6px auto;
     width: fit-content;
+    text-align: center;
     padding: .3em .8em;
     font-size: .875em;
     border-radius: 0.6em;

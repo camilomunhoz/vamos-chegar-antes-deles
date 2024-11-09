@@ -1,15 +1,13 @@
 $(async () => {
     setupUI()
 
-    // story.canvas = await loadObsidianCanvas("C:/Users/usuario/Documents/obsidian/brainlet/UFRGS/2024-02/SPM/Teste fluxograma.canvas")
-    // backstory.canvas = await loadObsidianCanvas("C:/Users/usuario/Documents/obsidian/brainlet/UFRGS/2024-02/SPM/backstory.canvas")
-    story.canvas = await loadObsidianCanvas("/story.json")
-    backstory.canvas = await loadObsidianCanvas("/backstory.json")
+    story.canvas = await loadObsidianCanvas("/obsidian/story.canvas")
+    backstory.canvas = await loadObsidianCanvas("/obsidian/backstory.canvas")
     
     story.passages = loadPassages(story.canvas)
     backstory.passages = loadPassages(backstory.canvas)
     
-    write(backstory.start, true)
+    writeBranch(backstory.start, backstory.passages)
 })
 
 const story = {
@@ -20,7 +18,7 @@ const story = {
 const backstory = {
     passages: [],
     canvas: null,
-    start: "588ae535d256b212",
+    start: "5fad4337dc903866",
 }
 
 let history = []
@@ -42,25 +40,24 @@ function setupUI() {
 }
 
 async function loadObsidianCanvas(path) {
-    return await $.get(path)
+    return await $.getJSON(path)
 }
 
 function loadPassages(canvas) {
-    const defs = {
-        "4": { type: "out", classes: "msg msg-out" }, // enviada
-        "3": { type: "narrator", classes: "info-box" },
-        "1": { type: "in", classes: "msg msg-in" }, // recebida
-        "5": { type: "image", classes: "" },
-        "?": { type: "audio", classes: "" },
+    const types = {
+        "1": "in", // recebida
+        "4": "out", // enviada
+        "3": "info",
+        "5": "image",
+        "?": "audio",
     }
 
     const passages = canvas.nodes.map(node => {
         return {
             id: node.id,
             message: passageMessage(node),
-            type: defs[node.color].type,
+            type: types[node.color],
             next: passageLinks(node, canvas.edges),
-            classes: defs[node.color].classes
         }
     })
 
@@ -97,15 +94,32 @@ function passageLinks(passage, allLinks) {
         if (link.fromNode === passage.id) {
             return link.toNode
         }
-    }).filter(result => result !== undefined);
+    }).filter(result => result !== undefined)
 }
 
-function write(passages) {
-    passages.forEach(entry => mountMessage($(e.target).html(), entry.classes))
+function startGame(passage) {
+    // TODO
+}
+
+function writeBranch(start, passages) {
+    let currentPassage = _.find(passages, {id: start})
+
+    do {
+        if (currentPassage) {
+            writeMessage(currentPassage)
+            currentPassage = _.find(passages, {id: currentPassage.next[0]})
+        }
+    } while (currentPassage)
+}
+
+function writeMessage(passage) {
+    $('.chat-box').append(
+        mountMessage(passage.message.text, passage.type, passage.message.time)
+    )
 }
 
 function sendMessage(e) {
-    const chosen = mountMessage($(e.target).html(), 'msg msg-out')
+    const chosen = mountMessage($(e.target).html(), 'out')
 
     $('.responses').slideUp(100, () => {
         $('.chat-box').append(chosen)
@@ -113,25 +127,33 @@ function sendMessage(e) {
     })
 }
 
-function mountMessage(text, classes, time = null) {
+function mountMessage(text, type, time = null) {
     if (!time) {
         const now = new Date()
         const hours = String(now.getHours()).padStart(2, '0')
         const minutes = String(now.getMinutes()).padStart(2, '0')
         time = `${hours}:${minutes}`
     }
+
+    const classes = {
+        'in': 'msg msg-in',
+        'out': 'msg msg-out',
+        'info': 'chat-box-info',
+        // 'image': '',
+        // 'audio': '',
+    }
     
     return $('<div/>', {
-            class: classes,
-        })
-        .html(
-            text + `
-                <div>
-                    <span class="msg-time">${time}</span>
-                    <img class="dblcheck" src="/img/dbl-check.svg">
-                </div>
-            `
-        )
+        class: classes[type],
+    })
+    .html(
+        text + (type !== 'info' ? `
+            <div>
+                <span class="msg-time">${time}</span>
+                <img class="dblcheck" src="/img/dbl-check.svg">
+            </div>
+        ` : '')
+    )
 }
 
 function scrollDown() {

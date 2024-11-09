@@ -21,7 +21,7 @@
 		{"id":"ab6a7177f0b38d61","type":"text","text":"de nada :)","x":45,"y":560,"width":215,"height":60,"color":"4"},
 		{"id":"7573017b3cef2fe3","type":"text","text":"vamos ficar mais um pouco","x":45,"y":1000,"width":215,"height":60,"color":"4"},
 		{"id":"ecb8e965007edd3c","type":"text","text":"vamos para casa","x":-355,"y":1000,"width":215,"height":60,"color":"4"},
-		{"id":"4459030ce80ae126","x":440,"y":-35,"width":250,"height":60,"color":"5","type":"text","text":"topo-escorregador.jpg"}
+		{"id":"4459030ce80ae126","type":"text","text":"topo-escorregador.jpg","x":440,"y":-35,"width":250,"height":60,"color":"5"}
 	],
 	"edges":[
 		{"id":"78d93a9c6fb4424e","fromNode":"8e99ce06dd2141a8","fromSide":"bottom","toNode":"b740127391978b2e","toSide":"top"},

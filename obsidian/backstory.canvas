@@ -1,0 +1,33 @@
+{
+	"nodes":[
+		{"id":"8d84d322c030ebd9","x":-620,"y":-300,"width":290,"height":320,"type":"group","label":"definitions"},
+		{"id":"4a3e2af5698a2fcc","type":"text","text":"@t 12:34\noi aninha!","x":-125,"y":-157,"width":250,"height":60,"color":"4"},
+		{"id":"ebff526e29f78554","type":"text","text":"@t 13:01\ntudo bem contigo??","x":-125,"y":-60,"width":250,"height":60,"color":"1"},
+		{"id":"dc1dc8b53c0c5db3","type":"text","text":"@t 13:01\nhein???","x":-125,"y":40,"width":250,"height":60,"color":"1"},
+		{"id":"d9ddec761cdc615e","type":"text","text":"Fulano saiu do quarto e quase morreu","x":-125,"y":160,"width":250,"height":60,"color":"3"},
+		{"id":"c7024e7dafa1a63b","type":"text","text":"Ao espiar pela janela do banheiro, mas se depara com uma cena horrível","x":-125,"y":280,"width":250,"height":100,"color":"3"},
+		{"id":"b1014db34757def6","type":"text","text":"Fulano saiu do quarto e quase morreu","x":320,"y":160,"width":250,"height":60,"color":"3"},
+		{"id":"4843c2baef62fcd5","type":"text","text":"Ao espiar pela janela do banheiro, mas se depara com uma cena horrível","x":320,"y":280,"width":250,"height":100,"color":"3"},
+		{"id":"3bea19565a744062","type":"text","text":"18/06/2024","x":320,"y":-280,"width":250,"height":60,"color":"3"},
+		{"id":"cf421956623e8d6d","type":"text","text":"@t 12:34\noi aninha!","x":320,"y":-157,"width":250,"height":60,"color":"4"},
+		{"id":"f439cbd176164a20","type":"text","text":"@t 13:01\ntudo bem contigo??","x":320,"y":-60,"width":250,"height":60,"color":"1"},
+		{"id":"819fb5f701b42441","type":"text","text":"@t 13:01\nhein???","x":320,"y":40,"width":250,"height":60,"color":"1"},
+		{"id":"ccd373b4ff77f5ac","type":"text","text":"@t 12:34\nmensagem enviada","x":-600,"y":-157,"width":250,"height":60,"color":"4"},
+		{"id":"fd2fde8e76491c39","type":"text","text":"@t 13:01\nmensagem recebida","x":-600,"y":-60,"width":250,"height":60,"color":"1"},
+		{"id":"5fad4337dc903866","type":"text","text":"25/05/2024","x":-125,"y":-280,"width":250,"height":60,"color":"3"},
+		{"id":"94944d3e1dae062c","type":"text","text":"narrador","x":-600,"y":-280,"width":250,"height":60,"color":"3"}
+	],
+	"edges":[
+		{"id":"619714a8d9820fce","fromNode":"5fad4337dc903866","fromSide":"bottom","toNode":"4a3e2af5698a2fcc","toSide":"top"},
+		{"id":"b21c6b803750be21","fromNode":"4a3e2af5698a2fcc","fromSide":"bottom","toNode":"ebff526e29f78554","toSide":"top"},
+		{"id":"138b48d2183319e4","fromNode":"ebff526e29f78554","fromSide":"bottom","toNode":"dc1dc8b53c0c5db3","toSide":"top"},
+		{"id":"7eac8ddc5f6f2e9d","fromNode":"dc1dc8b53c0c5db3","fromSide":"bottom","toNode":"d9ddec761cdc615e","toSide":"top"},
+		{"id":"f986e73ef9ba8424","fromNode":"d9ddec761cdc615e","fromSide":"bottom","toNode":"c7024e7dafa1a63b","toSide":"top"},
+		{"id":"76e1ba2940249b7b","fromNode":"cf421956623e8d6d","fromSide":"bottom","toNode":"f439cbd176164a20","toSide":"top"},
+		{"id":"38440577afd74f84","fromNode":"3bea19565a744062","fromSide":"bottom","toNode":"cf421956623e8d6d","toSide":"top"},
+		{"id":"900d58e5a79a3d72","fromNode":"f439cbd176164a20","fromSide":"bottom","toNode":"819fb5f701b42441","toSide":"top"},
+		{"id":"a17767db82b04a55","fromNode":"819fb5f701b42441","fromSide":"bottom","toNode":"b1014db34757def6","toSide":"top"},
+		{"id":"0c7bcbcaab4b8721","fromNode":"b1014db34757def6","fromSide":"bottom","toNode":"4843c2baef62fcd5","toSide":"top"},
+		{"id":"3114fb94b6bd55e9","fromNode":"c7024e7dafa1a63b","fromSide":"right","toNode":"3bea19565a744062","toSide":"left"}
+	]
+}
