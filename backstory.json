@@ -3,9 +3,9 @@
 		{"id":"588ae535d256b212","type":"text","text":"@t 12:34\nvai no balanço","x":-125,"y":-157,"width":250,"height":60,"color":"4"},
 		{"id":"5fad4337dc903866","type":"text","text":"@b 11","x":-125,"y":-280,"width":250,"height":60,"color":"3"},
 		{"id":"51e8ee4002c59bd3","type":"text","text":"@t 14:08\nboa","x":-125,"y":120,"width":250,"height":60,"color":"4"},
-		{"id":"814907ddbe3fbcaa","type":"text","text":"@t 14:09\ndale!","x":-125,"y":240,"width":250,"height":50,"color":"1"},
+		{"id":"814907ddbe3fbcaa","type":"text","text":"@t 14:09\ndale!\n\nmano!!!","x":-125,"y":240,"width":250,"height":56,"color":"1"},
 		{"id":"d71f3934b65f7b0b","type":"text","text":"@t 13:01\nadoro! estou indo!","x":-125,"y":-60,"width":250,"height":60,"color":"1"},
-		{"id":"aca1a0129075407d","x":-125,"y":20,"width":250,"height":60,"color":"1","type":"text","text":"@t 13:02\nme sentei"}
+		{"id":"aca1a0129075407d","type":"text","text":"@t 13:02\nme sentei","x":-125,"y":20,"width":250,"height":60,"color":"1"}
 	],
 	"edges":[
 		{"id":"ddc5424ea01a41b0","fromNode":"588ae535d256b212","fromSide":"bottom","toNode":"d71f3934b65f7b0b","toSide":"top"},

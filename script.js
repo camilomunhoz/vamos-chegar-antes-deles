@@ -6,7 +6,7 @@ $(async () => {
     story.canvas = await loadObsidianCanvas("/story.json")
     backstory.canvas = await loadObsidianCanvas("/backstory.json")
     
-    story.passages = loadPassages(story.canvas)
+    // story.passages = loadPassages(story.canvas)
     backstory.passages = loadPassages(backstory.canvas)
     
     write(backstory.start, true)
@@ -54,12 +54,12 @@ function loadPassages(canvas) {
         "?": "audio",
     }
 
-    const passages = canvas.nodes.map(entry => {
+    const passages = canvas.nodes.map(node => {
         return {
-            id: entry.id,
-            message: passageMessage(entry),
-            type: types[entry.color],
-            next: passageLinks(entry)
+            id: node.id,
+            message: passageMessage(node),
+            type: types[node.color],
+            next: passageLinks(node, canvas.edges)
         }
     })
 
@@ -69,32 +69,32 @@ function loadPassages(canvas) {
 function passageMessage(passage) {
     const message = {time: null, delayMs: 0}
     const lines = passage.text.split('\n')
-    const directivesCount = 0;
-
-    for (let i = 0; lines < lines.length; i++) {
+    let directivesCount = 0
+    
+    for (let line of lines) {
         // time directive
-        if (lines[i].substring(0, 2) === '@t') {
-            message.time = lines[i].slice(2)
+        if (line.substring(0, 2) === '@t') {
+            message.time = line.slice(2).trim()
             directivesCount++
         }
         // delay directive
-        else if (lines[i].substring(0, 2) === '@d') {
-            message.delayMs = Number(lines[i].slice(2))
+        else if (line.substring(0, 2) === '@d') {
+            message.delayMs = Number(line.slice(2).trim())
             directivesCount++
         }
-    }
+    }    
 
     return {
         ...message,
         // removing directives and rejoining string to HTML
-        text: lines.splice(0, directivesCount).join('<br>')
+        text: lines.splice(directivesCount).join('<br>').trim()
     }
 }
 
-function passageLinks(passage) {
-    return story.canvas.edges.map(entry => {
-        if (entry.fromNode === passage.id) {
-            return entry.toNode
+function passageLinks(passage, allLinks) {
+    return allLinks.map(link => {
+        if (link.fromNode === passage.id) {
+            return link.toNode
         }
     }).filter(result => result !== undefined);
 }
