@@ -6,9 +6,14 @@ $(async () => {
     
     story.passages = loadPassages(story.canvas)
     backstory.passages = loadPassages(backstory.canvas)
+
+    backstory.start = getTailId(backstory.passages, 'start')
+    story.start = getTailId(story.passages, 'start')
     
     writeBranch(backstory.start, backstory.passages)
+    scrollDown()
 })
+
 
 const story = {
     passages: [],
@@ -18,18 +23,15 @@ const story = {
 const backstory = {
     passages: [],
     canvas: null,
-    start: "5fad4337dc903866",
+    start: null,
 }
 
 let history = []
 
 function setupUI() {
     // Image visualization
-    $('img').on('click', e => {
-        const src = e.currentTarget.src
-        $('.img-overlay').fadeIn(200).find('img')[0].src = src
-    })
     $('.img-overlay').on('click', (e) => $(e.currentTarget).fadeOut(100))
+    $('img').on('click', expandImage)
 
     // Input events
     $('.response').on('click', sendMessage)
@@ -37,6 +39,11 @@ function setupUI() {
         $('.responses').slideToggle(100);
     })
     $('.chat-box, .chat-header').on('click', () => $('.responses').slideUp(100))
+}
+
+function expandImage(e) {
+    const src = e.currentTarget.src
+    $('.img-overlay').fadeIn(200).find('img')[0].src = src
 }
 
 async function loadObsidianCanvas(path) {
@@ -50,10 +57,17 @@ function loadPassages(canvas) {
         "3": "info",
         "5": "image",
         "?": "audio",
+        "#ffffff": "tail",
     }
+
+    const imageNodes = []
 
     const passages = canvas.nodes.map(node => {
         if (node.type === 'group') {
+            return
+        }
+        if (node.type === 'file') {
+            imageNodes.push(node)
             return
         }
         return {
@@ -61,8 +75,14 @@ function loadPassages(canvas) {
             message: passageMessage(node),
             type: types[node.color],
             next: passageLinks(node, canvas.edges),
+            image: null
         }
     }).filter(result => result !== null)
+
+    for (const img of imageNodes) {
+        const imgDest = _.find(canvas.edges, { fromNode: img.id }).toNode
+        _.find(passages, { id: imgDest }).image = img.file
+    }
 
     return passages
 }
@@ -80,10 +100,15 @@ function passageMessage(passage) {
         }
         // delay directive
         else if (line.substring(0, 2) === '@d') {
-            message.delayMs = Number(line.slice(2).trim())
+            // TODO
             directivesCount++
         }
-    }    
+        // message reaction
+        else if (line.substring(0, 2) === '@r') {
+            // TODO
+            directivesCount++
+        }
+    }
 
     return {
         ...message,
@@ -104,6 +129,12 @@ function startGame(passage) {
     // TODO
 }
 
+function getTailId(passages, tailType) {
+    return passages.find(p => {
+        return p?.type === 'tail' && p?.message.text === '@'+tailType
+    })?.id
+}
+
 function writeBranch(start, passages) {
     let currentPassage = _.find(passages, {id: start})
 
@@ -116,8 +147,14 @@ function writeBranch(start, passages) {
 }
 
 function writeMessage(passage) {
+    const whitelist = ['in', 'out', 'info']
+
+    if (!_.contains(whitelist, passage.type)) {
+        return
+    }
+
     $('.chat-box').append(
-        mountMessage(passage.message.text, passage.type, passage.message.time)
+        mountMessage(passage.message.text, passage.type, passage.message.time, passage.image)
     )
 }
 
@@ -130,7 +167,7 @@ function sendMessage(e) {
     })
 }
 
-function mountMessage(text, type, time = null) {
+function mountMessage(text, type, time = null, image = null) {
     if (!time) {
         const now = new Date()
         const hours = String(now.getHours()).padStart(2, '0')
@@ -145,18 +182,24 @@ function mountMessage(text, type, time = null) {
         // 'image': '',
         // 'audio': '',
     }
+
+    const imgElement = image ? $('<img/>', {
+        src: `/obsidian/${image}`,
+    }).on('click', expandImage) : ''
     
-    return $('<div/>', {
+    const message = $('<div/>', {
         class: classes[type],
     })
-    .html(
-        text + (type !== 'info' ? `
-            <div>
-                <span class="msg-time">${time}</span>
-                <img class="dblcheck" src="/img/dbl-check.svg">
-            </div>
-        ` : '')
-    )
+        .append(imgElement)
+        .append(`<span class="msg-text">${text}</span>`)
+        .append(type !== 'info' ? `
+            <div class="msg-details">
+                <span class="msg-time">${time}</span>` +
+                (type === 'out' ? '<img class="dblcheck" src="/img/dbl-check.svg">' : '') +
+            `</div>` : ''
+        )
+
+    return $('<div/>', {class: 'msg-container'}).append(message)
 }
 
 function scrollDown() {
