@@ -14,7 +14,6 @@ $(async () => {
     scrollDown()
 })
 
-
 const story = {
     passages: [],
     canvas: null,
@@ -52,12 +51,12 @@ async function loadObsidianCanvas(path) {
 
 function loadPassages(canvas) {
     const types = {
-        "1": "in", // recebida
-        "4": "out", // enviada
+        "1": "in", // received message
+        "4": "out", // sent message
         "3": "info",
         "5": "image",
         "?": "audio",
-        "#ffffff": "tail",
+        "#ffffff": "tail", // start and endings
     }
 
     const imageNodes = []
@@ -93,7 +92,7 @@ function passageMessage(passage) {
     let directivesCount = 0
     
     for (let line of lines) {
-        // time directive
+        // timestamp directive
         if (line.substring(0, 2) === '@t') {
             message.time = line.slice(2).trim()
             directivesCount++
