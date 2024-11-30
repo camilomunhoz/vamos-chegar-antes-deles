@@ -16,8 +16,7 @@ export class Story {
 
     async setup(canvasPath) {
         this.canvas = await this.loadObsidianCanvas(canvasPath)
-        this.passages = this.setPassages()
-        this.start = this.getStartId()
+        this.setPassages()
     }
 
     async loadObsidianCanvas(path) {
@@ -52,8 +51,9 @@ export class Story {
             const imgDest = _.find(this.canvas.edges, { fromNode: img.id }).toNode
             _.find(passages, { id: imgDest }).image = img.file
         }
-    
+        
         this.passages = passages
+        this.start = this.getStartId()
     }
 
     setPassageMessage(passage) {
