@@ -13,6 +13,8 @@ export class Game extends GUI {
     }
 
     start() {
+        $('.btn-undo').on('click', this.goBackToLastInteraction.bind(this))
+
         if (this.history.items.length === 0) {
             this.step(this.story.start)
         } else {
@@ -58,7 +60,11 @@ export class Game extends GUI {
     end(passage) {
         const isEnd = passage.type === 'tail' && passage.message.text === '@end'
         if (isEnd) {
-            this.writeMessage({type: 'info', message: {text: 'fim!'}})
+            // * temporary
+            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}}
+
+            this.writeMessage(endPassage)
+            this.history.put(endPassage)
         }
         return isEnd
     }
@@ -100,7 +106,7 @@ export class Game extends GUI {
         }
 
         if (delay) {
-            await this.triggerTyping(2000)
+            await this.triggerTyping(500)
         }
 
         $('.chat-box').append(
@@ -135,5 +141,25 @@ export class Game extends GUI {
             this.scrollDown()
             this.step(passage.goto[0])
         })
+    }
+
+    goBackToLastInteraction() {
+        // TODO: fix undo after undoing everything
+        // TODO: make loops undoable. unique ids when written maybe
+        const undoData = this.history.undo()
+
+        if (!undoData.lastBeforeInteraction) {
+            return
+        }
+
+        undoData.removeList.forEach(id => {
+            $(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`).hide(400, () => {
+                $(this).remove()
+            })
+        })
+
+        $('.responses').empty()
+        this.scrollDown()
+        this.setResponses(undoData.lastBeforeInteraction.goto)
     }
 } 

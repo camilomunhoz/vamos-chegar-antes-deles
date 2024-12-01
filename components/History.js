@@ -22,10 +22,21 @@ export class History {
     }
 
     undo() {
-        for (let i; i >= 0; i--) {
+        let lastBeforeInteraction = null
+        const removeList = []
+
+        for (let i = this.items.length - 1; i >= 0; i--) {
+            removeList.push(this.items[i].id)
             if (this.items[i].type === 'out') {
-                return this.items[i - 1]
+                lastBeforeInteraction = this.items[i - 1]
+                break
             }
+        }
+        this.removeLast(removeList.length)
+
+        return {
+            removeList: removeList,
+            lastBeforeInteraction: lastBeforeInteraction
         }
     }
 
