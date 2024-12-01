@@ -1,87 +1,125 @@
 import { GUI } from './GUI.js'
 
 export class Game extends GUI {
-    constructor() {
+    constructor(gameName) {
         super()
-        this.history = []
         this.story = null
+        this.setHistory(gameName)
     }
 
     setStory(story) {
         this.story = story
     }
 
-    startGame(passage) {
-        // TODO
+    setHistory(gameName) {
+        const key = gameName + '-history'
+        let history = localStorage.getItem(key)
+
+        if (!history || history.length === 0) {
+            history = localStorage.setItem(key, JSON.stringify([]))
+        }
+        this.history = JSON.parse(localStorage.getItem(key))
     }
 
-    
-    writeBranchFrom(start) {
-        let currentPassage = _.find(this.story.passages, {id: start})
+    start() {
+        if (this.history.length === 0) {
+            this.step(this.story.start)
+        } else {
+            this.step(this.history.findLast().id)
+        }
+    }
+
+    async step(passageId) {
+        const passage = this.getPassageById(passageId)
+
+        if (this.end(passage)) {
+            return
+        }
+
+        await this.writeMessage(passage)
         
+        let responsesIds = passage.goto
+        let current = this.getPassageById(passage.goto[0])
+
+        if (this.end(current)) {
+            return
+        }
+
+        while (current.type !== 'out') {
+            await this.writeMessage(current)
+            responsesIds = current.goto
+
+            current = this.getPassageById(current.goto[0])
+            if (this.end(current)) {
+                return
+            }
+        }
+
+        this.setResponses(responsesIds)
+    }
+
+    end(passage) {
+        const isEnd = passage.type === 'tail' && passage.message.text === '@end'
+        if (isEnd) {
+            this.writeMessage({type: 'info', message: {text: 'fim!'}})
+        }
+        return isEnd
+    }
+
+    getPassageById(passageId) {
+        return _.find(this.story.passages, {id: passageId})
+    }
+    
+    writeBranchFrom(passageId) {
+        let currentPassage = this.getPassageById(passageId)
 
         do {
             if (currentPassage) {
-                this.writeMessage(currentPassage)
-                currentPassage = _.find(this.story.passages, {id: currentPassage.goto[0]})
+                this.writeMessage(currentPassage, false)
+                currentPassage = this.getPassageById(currentPassage.goto[0])
             }
         } while (currentPassage)
     }
 
-    writeMessage(passage) {
+    async writeMessage(passage, delay = true) {
         const whitelist = ['in', 'out', 'info']
 
         if (!_.contains(whitelist, passage.type)) {
             return
         }
 
+        if (delay) {
+            await this.triggerTyping(2000)
+        }
+
         $('.chat-box').append(
-            this.mountMessage(passage.message.text, passage.type, passage.message.time, passage.image)
+            this.mountMessage(passage)
         )
+        
+        if (delay) {
+            this.scrollDown()
+        }
     }
 
-    sendMessage(e) {
-        const chosen = this.mountMessage($(e.target).html(), 'out')
+    setResponses(responsesIds) {
+        responsesIds.forEach(nodeId => {
+            const response = this.getPassageById(nodeId)
+            $('.responses').append(
+                $('<div/>', {class: 'response msg msg-out'})
+                    .html(response.message.text)
+                    .on('click', () => { this.sendMessage(nodeId) })
+            )
+        })
+    }
+
+    sendMessage(passageId) {
+        const passage = this.getPassageById(passageId)
 
         $('.responses').slideUp(100, () => {
-            $('.chat-box').append(chosen)
-            scrollDown()
+            $('.responses').empty()
+            this.writeMessage(passage, false)
+            this.scrollDown()
+            this.step(passage.goto[0])
         })
     }
-
-    mountMessage(text, type, time = null, image = null) {
-        if (!time) {
-            const now = new Date()
-            const hours = String(now.getHours()).padStart(2, '0')
-            const minutes = String(now.getMinutes()).padStart(2, '0')
-            time = `${hours}:${minutes}`
-        }
-
-        const classes = {
-            'in': 'msg msg-in',
-            'out': 'msg msg-out',
-            'info': 'chat-box-info',
-            // 'image': '',
-            // 'audio': '',
-        }
-
-        const imgElement = image ? $('<img/>', {
-            src: `/obsidian/${image}`,
-        }).on('click', this.expandImage) : ''
-        
-        const message = $('<div/>', {
-            class: classes[type],
-        })
-            .append(imgElement)
-            .append(`<span class="msg-text">${text}</span>`)
-            .append(type !== 'info' ? `
-                <div class="msg-details">
-                    <span class="msg-time">${time}</span>` +
-                    (type === 'out' ? '<img class="dblcheck" src="/img/dbl-check.svg">' : '') +
-                `</div>` : ''
-            )
-
-        return $('<div/>', {class: 'msg-container'}).append(message)
-    }
-
 } 
