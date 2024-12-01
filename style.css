@@ -157,7 +157,13 @@ html, body {
     color: #fff6;
     background-color: #2a3942;
     border-radius: 0.6em;
-    transition: background .2s ease;
+    transition: background .2s ease, opacity .4s ease;
+    cursor: pointer;
+}
+.input-trigger.disabled {
+    opacity: .3;
+    user-select: none;
+    pointer-events: none;
     cursor: pointer;
 }
 .response:hover,

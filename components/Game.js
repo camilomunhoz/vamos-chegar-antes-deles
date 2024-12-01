@@ -1,44 +1,39 @@
 import { GUI } from './GUI.js'
+import { History } from './History.js'
 
 export class Game extends GUI {
     constructor(gameName) {
         super()
         this.story = null
-        this.setHistory(gameName)
+        this.history = new History(gameName)
     }
 
     setStory(story) {
         this.story = story
     }
 
-    setHistory(gameName) {
-        const key = gameName + '-history'
-        let history = localStorage.getItem(key)
-
-        if (!history || history.length === 0) {
-            history = localStorage.setItem(key, JSON.stringify([]))
-        }
-        this.history = JSON.parse(localStorage.getItem(key))
-    }
-
     start() {
-        if (this.history.length === 0) {
+        if (this.history.items.length === 0) {
             this.step(this.story.start)
         } else {
-            this.step(this.history.findLast().id)
+            const lastPassage = this.history.getLast()
+            this.history.removeLast(1)
+            this.writePassages(this.history.items)
+            this.step(lastPassage.id)
         }
     }
 
     async step(passageId) {
         const passage = this.getPassageById(passageId)
+        let responsesIds = passage.goto
 
         if (this.end(passage)) {
             return
         }
 
         await this.writeMessage(passage)
+        this.history.put(passage)
         
-        let responsesIds = passage.goto
         let current = this.getPassageById(passage.goto[0])
 
         if (this.end(current)) {
@@ -47,6 +42,8 @@ export class Game extends GUI {
 
         while (current.type !== 'out') {
             await this.writeMessage(current)
+            this.history.put(current)
+
             responsesIds = current.goto
 
             current = this.getPassageById(current.goto[0])
@@ -70,6 +67,20 @@ export class Game extends GUI {
         return _.find(this.story.passages, {id: passageId})
     }
     
+    /**
+     * Write an ordered list of passages.
+     * Does not take into account "goto" relations.
+     */
+    writePassages(passages) {
+        passages.forEach(passage => {
+            this.writeMessage(passage, false)
+        })
+    }
+    
+    /**
+     * Take one node and crawl all the way to an end,
+     * always through the first "goto" node.
+     */
     writeBranchFrom(passageId) {
         let currentPassage = this.getPassageById(passageId)
 
@@ -109,6 +120,7 @@ export class Game extends GUI {
                     .html(response.message.text)
                     .on('click', () => { this.sendMessage(nodeId) })
             )
+            $('.input-trigger').removeClass('disabled')
         })
     }
 
@@ -117,7 +129,9 @@ export class Game extends GUI {
 
         $('.responses').slideUp(100, () => {
             $('.responses').empty()
+            $('.input-trigger').addClass('disabled')
             this.writeMessage(passage, false)
+            this.history.put(passage)
             this.scrollDown()
             this.step(passage.goto[0])
         })

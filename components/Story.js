@@ -41,8 +41,8 @@ export class Story {
             return {
                 id: node.id,
                 type: this.nodeTypes[node.color],
-                message: this.setPassageMessage(node),
-                goto: this.setPassageGoTos(node),
+                message: this.getPassageMessage(node),
+                goto: this.getPassageGoTos(node),
                 image: null
             }
         }).filter(result => result !== null)
@@ -56,7 +56,7 @@ export class Story {
         this.start = this.getStartId()
     }
 
-    setPassageMessage(passage) {
+    getPassageMessage(passage) {
         const message = {time: null, delayMs: 0}
         const lines = passage.text.split('\n')
         let directivesCount = 0
@@ -86,7 +86,7 @@ export class Story {
         }
     }
     
-    setPassageGoTos(passage) {
+    getPassageGoTos(passage) {
         return this.canvas.edges.map(link => {
             if (link.fromNode === passage.id) {
                 return link.toNode

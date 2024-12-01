@@ -13,7 +13,7 @@ $(async () => {
     game.writeBranchFrom(backstory.start)
     
     game.setStory(story)
+
     game.start()
-    
     game.scrollDown()
 })
