@@ -37,7 +37,7 @@ export class GUI {
         }
 
         const imgElement = passage.image ? $('<img/>', {
-            src: `/obsidian/${passage.image}`,
+            src: passage.image,
         }).on('click', this.expandImage) : ''
         
         const message = $('<div/>', {

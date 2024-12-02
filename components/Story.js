@@ -5,11 +5,9 @@ export class Story {
         this.start = null
 
         this.nodeTypes = {
-            "1": "in", // received message
-            "4": "out", // sent message
-            "3": "info",
-            "5": "image",
-            "?": "audio",
+            "1": "in",   // received message
+            "4": "out",  // sent message
+            "3": "info", // info box
             "#ffffff": "tail", // start and endings
         }
     }
@@ -29,31 +27,65 @@ export class Story {
         }
 
         const imageNodes = []
+        const audioNodes = []
     
         const passages = this.canvas.nodes.map(node => {
             if (node.type === 'group') {
                 return
             }
             if (node.type === 'file') {
-                imageNodes.push(node)
+                if (node.file.split('/')[0] === 'images') {
+                    imageNodes.push(node)
+                }
+                else if (node.file.split('/')[0] === 'audio') {
+                    audioNodes.push(node)
+                }
                 return
             }
             return {
                 id: node.id,
                 type: this.nodeTypes[node.color],
-                message: this.getPassageMessage(node),
+                message: this.getPassageMessage(node),  
                 goto: this.getPassageGoTos(node),
-                image: null
+                image: null,
+                audio: [],
             }
         }).filter(result => result !== null)
-    
-        for (const img of imageNodes) {
-            const imgDest = _.find(this.canvas.edges, { fromNode: img.id }).toNode
-            _.find(passages, { id: imgDest }).image = img.file
-        }
         
         this.passages = passages
+        this.setPassagesImages(imageNodes)
+        this.setPassagesAudio(audioNodes)
+        this.cleanUpPassages()
         this.start = this.getStartId()
+    }
+
+    setPassagesImages(imageNodes) {
+        for (const img of imageNodes) {
+            const imgDestinationId = _.find(this.canvas.edges, { fromNode: img.id }).toNode
+            _.find(this.passages, { id: imgDestinationId }).image = "/obsidian/"+img.file
+        }
+    }
+
+    setPassagesAudio(audioNodes) {
+        for (const aud of audioNodes) {
+            const middlewareId = _.find(this.canvas.edges, { fromNode: aud.id }).toNode
+            const middleware = _.find(this.canvas.nodes, { id: middlewareId })
+            const audioType = middleware.text
+            const audioDestinationId = _.find(this.canvas.edges, { fromNode: middleware.id }).toNode
+            const passage = _.find(this.passages, { id: audioDestinationId })
+
+            passage.audio.push({
+                src: "/obsidian/"+aud.file,
+                type: audioType,
+                loop: audioType === '@soundtrack',
+            })
+        }
+    }
+
+    cleanUpPassages() {
+        this.passages = this.passages
+            .filter(p => p !== undefined)
+            .filter(p => p?.type !== undefined)
     }
 
     getPassageMessage(passage) {
@@ -69,7 +101,7 @@ export class Story {
             }
             // delay directive
             else if (line.substring(0, 2) === '@d') {
-                // TODO
+                message.delayMs = line.slice(2).trim()
                 directivesCount++
             }
             // message reaction

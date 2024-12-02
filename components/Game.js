@@ -27,6 +27,7 @@ export class Game extends GUI {
 
     async step(passageId) {
         const passage = this.getPassageById(passageId)
+        
         let responsesIds = passage.goto
 
         if (this.end(passage)) {
@@ -99,6 +100,8 @@ export class Game extends GUI {
     }
 
     async writeMessage(passage, delay = true) {
+        this.handleAudio(passage)
+
         const whitelist = ['in', 'out', 'info']
 
         if (!_.contains(whitelist, passage.type)) {
@@ -141,6 +144,28 @@ export class Game extends GUI {
             this.scrollDown()
             this.step(passage.goto[0])
         })
+    }
+
+    handleAudio(passage) {
+        if (passage.audio.length) {
+            for (const aud of passage.audio) {
+                if (this.soundtrack && aud.type === '@soundtrack') {
+                    console.log('stop');
+                    // Howl.stop(this.soundtrack)
+                }
+
+                console.log('play')
+                const player = new Howl({
+                    src: aud.src,
+                    loop: aud.loop,
+                    // html5: true,
+                    // volume: 0
+                })
+                // player.play()
+                this.soundtrack = player.play()              
+                // player.fade(0, 1, 1000)
+            }
+        }
     }
 
     goBackToLastInteraction() {
