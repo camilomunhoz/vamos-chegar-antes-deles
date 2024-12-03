@@ -107,9 +107,6 @@ export class GUI {
     }
 
     scrollDown(ms = 200) {
-        return new Promise(resolve => {
-            $('.chat-box').scrollTo('max', ms)
-            setTimeout(() => resolve(), ms + 200)
-        })
+        $('.chat-box').scrollTo('max', ms)
     }
 }

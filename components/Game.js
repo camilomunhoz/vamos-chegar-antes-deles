@@ -37,43 +37,42 @@ export class Game extends GUI {
      * @param { String } passageId - head of chain
      */
     async step(passageId) {
-        const passage = this.getPassageById(passageId)
-        
-        let responsesIds = passage.goto
+        let passage = this.getPassageById(passageId);
 
         if (this.end(passage)) {
             return
         }
 
-        await this.writeMessage(passage)
-        this.history.put(passage)
-        
-        let current = this.getPassageById(passage.goto[0])
+        let responsesIds = passage.goto
 
-        if (this.end(current)) {
+        if (this.allowWriting) {
+            await this.writeMessage(passage)
+            if (!this.allowWriting) return
+            this.history.put(passage)
+        } else {
             return
         }
 
-        while (current.type !== 'out') {
-            await this.writeMessage(current)
+        let current = this.getPassageById(passage.goto[0])
 
+        while (!this.end(current) && current.type !== 'out') {
             if (this.allowWriting) {
+                await this.writeMessage(current)
+                if (!this.allowWriting) return
                 this.history.put(current)
-                responsesIds = current.goto
-    
-                current = this.getPassageById(current.goto[0])
-                if (this.end(current)) {
-                    return
-                }
             } else {
-                break
+                return
             }
+
+            responsesIds = current.goto
+            current = this.getPassageById(current.goto[0])
         }
 
         if (this.allowWriting) {
             this.setResponses(responsesIds)
         }
     }
+
 
     end(passage) {
         const isEnd = passage.type === 'tail' && passage.message.text === '@end'
@@ -131,7 +130,9 @@ export class Game extends GUI {
         } while (currentPassage)
     }
 
-    async writeMessage(passage, delay = 1000) {       
+    async writeMessage(passage, delay = 1000) {
+        if (!this.allowWriting) return
+
         const whitelist = ['in', 'out', 'info']
         const $message = this.mountMessage(passage)
 
@@ -146,7 +147,9 @@ export class Game extends GUI {
                 delay = passage.message.delayMs
             }
             await this.sleep(delay)
+            if (!this.allowWriting) return
             await this.triggerTyping(passage.message.typingMs, passage.type)
+            if (!this.allowWriting) return
             
             /**
              * Being here prevents sound triggering in
@@ -154,10 +157,12 @@ export class Game extends GUI {
              */
             this.triggerAudios(passage.audio)
         }
+        
+        $('.chat-box').append($message)
 
-        if (this.allowWriting) {
-            $('.chat-box').append($message)
-            $message.show(300, () => this.scrollDown())
+        if (delay) {
+            // made that way to support future animations
+            $message.show(0, () => this.scrollDown())
         }
     }
 
@@ -204,6 +209,7 @@ export class Game extends GUI {
 
         if (alreadyPlayed) {
             alreadyPlayed.howl.play()
+            alreadyPlayed.playing = true
         } else {
             const audio = new Howl({
                 src: aud.src,
@@ -222,16 +228,18 @@ export class Game extends GUI {
         }
     }
 
-    stopCurrentSoundtrack(fadeMs = 0) {
-        const current = _.find(this.audioPlayer, { playing: true })
-        if (current) {
-            if (fadeMs) {
-                current.howl.fade(1, 0, fadeMs)
-                setTimeout(() => current.howl.stop(), fadeMs)
-            } else {
-                current.howl.stop()
+    stopCurrentSoundtrack(fadeMs = 0) {        
+        const current = _.where(this.audioPlayer, { playing: true })
+        if (current.length) {
+            for (let track of current) {
+                if (fadeMs) {
+                    track.howl.fade(1, 0, fadeMs)
+                    setTimeout(() => track.howl.stop(), fadeMs)
+                } else {
+                    track.howl.stop()
+                }
+                track.playing = false
             }
-            current.playing = false
         }
     }
 
@@ -258,14 +266,12 @@ export class Game extends GUI {
         }
     }
 
-    async goBackToLastInteraction() {
+    goBackToLastInteraction() {
         // TODO: make loops undoable. unique ids when written maybe
         if (!this.allowUndo) {
             return
         }
         this.allowWriting = false
-
-        await this.scrollDown(400)
 
         const undoData = this.history.undo()
 
@@ -279,6 +285,7 @@ export class Game extends GUI {
             })
         })
 
+        $('.typing-bubble').hide(100)
         $('.responses').empty()
         this.setResponses(undoData.lastBeforeInteraction.goto)
 

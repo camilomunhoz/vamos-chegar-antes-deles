@@ -10,14 +10,19 @@
 }
 
 .typing-bubble .circle {
-    height: 0.6em;
-    width: 0.6em;
+    height: 0.5em;
+    width: 0.5em;
     border-radius: 50%;
     background-color: #8d8d8d;
 }
 
 .typing-bubble.info {
     margin: 0 auto;
+    border-radius: 4px;
+}
+
+.typing-bubble.info .circle {
+    border-radius: 0;
 }
 
 .typing-bubble .circle.scaling {
@@ -48,7 +53,7 @@
     transform: scale(1);
     }
     50% {
-    transform: scale(1.4);
+    transform: scale(1.2);
     }
     100% {
     transform: scale(1);
