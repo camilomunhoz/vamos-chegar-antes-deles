@@ -7,6 +7,8 @@ export class Game extends GUI {
         this.story = null
         this.history = new History(gameName)
         this.audioPlayer = []
+        this.allowWriting = true
+        this.allowUndo = false
     }
 
     setStory(story) {
@@ -16,16 +18,33 @@ export class Game extends GUI {
     start() {
         $('.btn-undo').on('click', this.goBackToLastInteraction.bind(this))
 
+        this.playLastSoundtrack()
+        this.setUndoAllowance()
+
         if (this.history.items.length === 0) {
             this.step(this.story.start)
         } else {
-            const lastPassage = this.history.getLast()
-            this.history.removeLast(1)
             this.writePassages(this.history.items)
-            this.step(lastPassage.id)
+
+            const lastPassage = this.history.getLast()
+            const nextPassage = this.getPassageById(lastPassage.goto[0])
+
+            if (nextPassage.type === 'out') {
+                this.setResponses(lastPassage.goto)
+            } else {
+                this.step(nextPassage.id)
+            }
         }
     }
 
+    /**
+     * Simulates a person typing on the chat.
+     * 
+     * Writes a chain of "in" or "info" nodes until
+     * it waits an setup interaction nodes.
+     * 
+     * @param { String } passageId - head of chain
+     */
     async step(passageId) {
         const passage = this.getPassageById(passageId)
         
@@ -46,17 +65,23 @@ export class Game extends GUI {
 
         while (current.type !== 'out') {
             await this.writeMessage(current)
-            this.history.put(current)
 
-            responsesIds = current.goto
-
-            current = this.getPassageById(current.goto[0])
-            if (this.end(current)) {
-                return
+            if (this.allowWriting) {
+                this.history.put(current)
+                responsesIds = current.goto
+    
+                current = this.getPassageById(current.goto[0])
+                if (this.end(current)) {
+                    return
+                }
+            } else {
+                break
             }
         }
 
-        this.setResponses(responsesIds)
+        if (this.allowWriting) {
+            this.setResponses(responsesIds)
+        }
     }
 
     end(passage) {
@@ -100,8 +125,7 @@ export class Game extends GUI {
         } while (currentPassage)
     }
 
-    async writeMessage(passage, delay = 2000) {
-
+    async writeMessage(passage, delay = 2000) {       
         const whitelist = ['in', 'out', 'info']
 
         if (!_.contains(whitelist, passage.type)) {
@@ -118,12 +142,14 @@ export class Game extends GUI {
              * Being here prevents sound triggering in
              * passthrough writing (no delay), e.g. history restoring
              */
-            this.handleAudio(passage.audio)
+            this.triggerAudios(passage.audio)
         }
 
-        $('.chat-box').append(
-            this.mountMessage(passage)
-        )
+        if (this.allowWriting) {
+            $('.chat-box').append(
+                this.mountMessage(passage)
+            )
+        }
         
         if (delay) {
             this.scrollDown()
@@ -144,6 +170,7 @@ export class Game extends GUI {
 
     sendMessage(passageId) {
         const passage = this.getPassageById(passageId)
+        this.allowWriting = true
 
         $('.responses').slideUp(100, () => {
             $('.responses').empty()
@@ -152,49 +179,88 @@ export class Game extends GUI {
             this.history.put(passage)
             this.scrollDown()
             this.step(passage.goto[0])
+            this.setUndoAllowance()
         })
+
     }
 
-    handleAudio(audioList) {
+    triggerAudios(audioList) {
         if (!audioList.length) return
 
         for (const aud of audioList) {
-
-            // Stops current playing soundtrack
             if (this.audioPlayer.length && aud.type === '@soundtrack') {
-                const current = _.find(this.audioPlayer, { playing: true })
-                current.howl.fade(1, 0, 1000)
-                setTimeout(() => current.howl.stop(), 1000)
-                current.playing = false
+                this.stopCurrentSoundtrack(500)
             }
+            this.playAudio(aud)
+        }
+    }
 
-            const alreadyPlayed = _.find(this.audioPlayer, { src: aud.src })
+    playAudio(aud) {
+        const alreadyPlayed = _.find(this.audioPlayer, { src: aud.src })
 
-            if (alreadyPlayed) {
-                alreadyPlayed.howl.play()
+        if (alreadyPlayed) {
+            alreadyPlayed.howl.play()
+        } else {
+            const audio = new Howl({
+                src: aud.src,
+                loop: aud.loop,
+                volume: 0,
+                onplay: () => audio.fade(0, 1, 1000)
+            })
+            audio.play()
+
+            this.audioPlayer.push({
+                src: aud.src,
+                type: aud.type,
+                playing: aud.type === "@soundtrack",
+                howl: audio
+            })
+        }
+    }
+
+    stopCurrentSoundtrack(fadeMs = 0) {
+        const current = _.find(this.audioPlayer, { playing: true })
+        if (current) {
+            if (fadeMs) {
+                current.howl.fade(1, 0, fadeMs)
+                setTimeout(() => current.howl.stop(), fadeMs)
             } else {
-                const audio = new Howl({
-                    src: aud.src,
-                    loop: aud.loop,
-                    volume: 0,
-                    onplay: () => audio.fade(0, 1, 1000)
-                })
-                audio.play()
-
-                this.audioPlayer.push({
-                    src: aud.src,
-                    type: aud.type,
-                    playing: aud.type === "@soundtrack",
-                    howl: audio
-                })
+                current.howl.stop()
             }
+            current.playing = false
+        }
+    }
+
+    playLastSoundtrack() {
+        const current = _.find(this.audioPlayer, { playing: true })
+        let target = null
+
+        // Find the last soundtrack in the history
+        for (let i = this.history.items.length - 1; i >= 0; i--) {    
+            if (this.history.items[i].audio.length) {
+                const track = _.find(this.history.items[i].audio, { type: '@soundtrack' })
+                if (track) {
+                    target = track
+                    break
+                }
+            }
+        }
+
+        if (target && (!current || target.src !== current.src)) {
+            if (current) {
+                this.stopCurrentSoundtrack()
+            }
+            this.playAudio(target)
         }
     }
 
     goBackToLastInteraction() {
-        // TODO: fix undo after undoing everything
         // TODO: make loops undoable. unique ids when written maybe
-        // TODO: handle audio
+        if (!this.allowUndo) {
+            return
+        }
+        this.allowWriting = false
+
         const undoData = this.history.undo()
 
         if (!undoData.lastBeforeInteraction) {
@@ -208,7 +274,20 @@ export class Game extends GUI {
         })
 
         $('.responses').empty()
-        this.scrollDown()
         this.setResponses(undoData.lastBeforeInteraction.goto)
+
+        this.playLastSoundtrack()
+        this.setUndoAllowance()
+        this.scrollDown()
+    }
+
+    setUndoAllowance() {
+        if (_.find(this.history.items, {type: 'out'})) {
+            this.allowUndo = true
+            $('.btn-undo').removeClass('disabled')
+        } else {
+            this.allowUndo = false
+            $('.btn-undo').addClass('disabled')
+        }
     }
 } 
