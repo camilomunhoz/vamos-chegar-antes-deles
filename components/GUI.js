@@ -56,16 +56,60 @@ export class GUI {
         return $('<div/>', {class: 'msg-container'}).append(message)
     }
 
-    triggerTyping(ms) {
+    triggerTyping(ms, type) {
+        let bubble = `
+            <div class="typing-bubble" style="display: none">
+                <span class="circle scaling"></span>
+                <span class="circle scaling"></span>
+                <span class="circle scaling"></span>
+            </div>
+        `
+        if (type === 'info') {
+            bubble = `
+                <div class="typing-bubble info" style="display: none">
+                    <span class="circle bouncing"></span>
+                    <span class="circle bouncing"></span>
+                    <span class="circle bouncing"></span>
+                </div>
+            `
+        }
+        $('.chat-box').append(bubble)
+
+        if (type === 'info') {
+            $('.typing-bubble').slideDown(100, () => this.scrollDown())
+        } else {
+            $('.typing-bubble').show(100, () => this.scrollDown())
+        }
+
         return new Promise(resolve => {
             setTimeout(() => {
-                // TODO: typing animation
+                const $bubble = $('.chat-box .typing-bubble')
+
+                if (type === 'info') {
+                    $bubble.slideUp(100, function() {
+                        $(this.remove())
+                    })
+                } else {
+                    $bubble.hide(100, function() {
+                        $(this.remove())
+                    })
+                }
+                    
                 resolve()
             }, ms)
         })
     }
 
-    scrollDown() {
-        $('.chat-box').scrollTo('max', 200)
+    sleep(ms) {
+        return new Promise(resolve => {
+            setTimeout(() => resolve(), ms)
+        })
+    }
+
+    scrollDown(ms = 200) {
+        return new Promise(resolve => {
+            $('.chat-box').scrollTo('max', ms)
+            setTimeout(() => resolve(), ms + 200)
+        })
     }
 }

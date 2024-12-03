@@ -24,16 +24,7 @@ export class Game extends GUI {
         if (this.history.items.length === 0) {
             this.step(this.story.start)
         } else {
-            this.writePassages(this.history.items)
-
-            const lastPassage = this.history.getLast()
-            const nextPassage = this.getPassageById(lastPassage.goto[0])
-
-            if (nextPassage.type === 'out') {
-                this.setResponses(lastPassage.goto)
-            } else {
-                this.step(nextPassage.id)
-            }
+            this.writeHistory()
         }
     }
 
@@ -88,7 +79,7 @@ export class Game extends GUI {
         const isEnd = passage.type === 'tail' && passage.message.text === '@end'
         if (isEnd) {
             // * temporary
-            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, audio: []}
+            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, audio: [], goto: []}
 
             this.writeMessage(endPassage)
             this.history.put(endPassage)
@@ -98,6 +89,21 @@ export class Game extends GUI {
 
     getPassageById(passageId) {
         return _.find(this.story.passages, {id: passageId})
+    }
+
+    writeHistory() {
+        this.writePassages(this.history.items)
+
+        const lastPassage = this.history.getLast()
+        const nextPassage = this.getPassageById(lastPassage.goto[0])
+
+        if (nextPassage) {
+            if (nextPassage.type === 'out') {
+                this.setResponses(lastPassage.goto)
+            } else {
+                this.step(nextPassage.id)
+            }
+        }
     }
     
     /**
@@ -125,18 +131,22 @@ export class Game extends GUI {
         } while (currentPassage)
     }
 
-    async writeMessage(passage, delay = 2000) {       
+    async writeMessage(passage, delay = 1000) {       
         const whitelist = ['in', 'out', 'info']
+        const $message = this.mountMessage(passage)
 
         if (!_.contains(whitelist, passage.type)) {
             return
         }
 
         if (delay) {
+            $message.attr('style', 'display: none')
+
             if (passage.message.delayMs) {
                 delay = passage.message.delayMs
             }
-            await this.triggerTyping(delay)
+            await this.sleep(delay)
+            await this.triggerTyping(passage.message.typingMs, passage.type)
             
             /**
              * Being here prevents sound triggering in
@@ -146,13 +156,8 @@ export class Game extends GUI {
         }
 
         if (this.allowWriting) {
-            $('.chat-box').append(
-                this.mountMessage(passage)
-            )
-        }
-        
-        if (delay) {
-            this.scrollDown()
+            $('.chat-box').append($message)
+            $message.show(300, () => this.scrollDown())
         }
     }
 
@@ -181,7 +186,6 @@ export class Game extends GUI {
             this.step(passage.goto[0])
             this.setUndoAllowance()
         })
-
     }
 
     triggerAudios(audioList) {
@@ -254,12 +258,14 @@ export class Game extends GUI {
         }
     }
 
-    goBackToLastInteraction() {
+    async goBackToLastInteraction() {
         // TODO: make loops undoable. unique ids when written maybe
         if (!this.allowUndo) {
             return
         }
         this.allowWriting = false
+
+        await this.scrollDown(400)
 
         const undoData = this.history.undo()
 

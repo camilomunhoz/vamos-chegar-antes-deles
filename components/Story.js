@@ -89,7 +89,12 @@ export class Story {
     }
 
     getPassageMessage(passage) {
-        const message = {time: null, delayMs: 0}
+        const message = {
+            time: null,
+            delayMs: 0,
+            typingMs: 2000
+        
+        }
         const lines = passage.text.split('\n')
         let directivesCount = 0
         
