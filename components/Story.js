@@ -101,6 +101,8 @@ export class Story {
             }
             // delay directive
             else if (line.substring(0, 2) === '@d') {
+                console.log('ola');
+                
                 message.delayMs = line.slice(2).trim()
                 directivesCount++
             }

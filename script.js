@@ -7,7 +7,7 @@ $(async () => {
     const backstory = new Story()
 
     await story.setup("/obsidian/story.canvas")
-    await backstory.setup("/obsidian/backstory.canvas")
+    // await backstory.setup("/obsidian/backstory.canvas")
     
     // game.setStory(backstory)
     // game.writeBranchFrom(backstory.start)
@@ -17,6 +17,6 @@ $(async () => {
     game.start()
     game.scrollDown()
 
-    console.log(backstory);
+    // console.log(backstory);
     console.log(story);
 })

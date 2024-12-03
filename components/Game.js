@@ -6,6 +6,7 @@ export class Game extends GUI {
         super()
         this.story = null
         this.history = new History(gameName)
+        this.audioPlayer = []
     }
 
     setStory(story) {
@@ -62,7 +63,7 @@ export class Game extends GUI {
         const isEnd = passage.type === 'tail' && passage.message.text === '@end'
         if (isEnd) {
             // * temporary
-            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}}
+            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, audio: []}
 
             this.writeMessage(endPassage)
             this.history.put(endPassage)
@@ -99,8 +100,7 @@ export class Game extends GUI {
         } while (currentPassage)
     }
 
-    async writeMessage(passage, delay = true) {
-        this.handleAudio(passage)
+    async writeMessage(passage, delay = 2000) {
 
         const whitelist = ['in', 'out', 'info']
 
@@ -109,7 +109,16 @@ export class Game extends GUI {
         }
 
         if (delay) {
-            await this.triggerTyping(500)
+            if (passage.message.delayMs) {
+                delay = passage.message.delayMs
+            }
+            await this.triggerTyping(delay)
+            
+            /**
+             * Being here prevents sound triggering in
+             * passthrough writing (no delay), e.g. history restoring
+             */
+            this.handleAudio(passage.audio)
         }
 
         $('.chat-box').append(
@@ -146,24 +155,38 @@ export class Game extends GUI {
         })
     }
 
-    handleAudio(passage) {
-        if (passage.audio.length) {
-            for (const aud of passage.audio) {
-                if (this.soundtrack && aud.type === '@soundtrack') {
-                    console.log('stop');
-                    // Howl.stop(this.soundtrack)
-                }
+    handleAudio(audioList) {
+        if (!audioList.length) return
 
-                console.log('play')
-                const player = new Howl({
+        for (const aud of audioList) {
+
+            // Stops current playing soundtrack
+            if (this.audioPlayer.length && aud.type === '@soundtrack') {
+                const current = _.find(this.audioPlayer, { playing: true })
+                current.howl.fade(1, 0, 1000)
+                setTimeout(() => current.howl.stop(), 1000)
+                current.playing = false
+            }
+
+            const alreadyPlayed = _.find(this.audioPlayer, { src: aud.src })
+
+            if (alreadyPlayed) {
+                alreadyPlayed.howl.play()
+            } else {
+                const audio = new Howl({
                     src: aud.src,
                     loop: aud.loop,
-                    // html5: true,
-                    // volume: 0
+                    volume: 0,
+                    onplay: () => audio.fade(0, 1, 1000)
                 })
-                // player.play()
-                this.soundtrack = player.play()              
-                // player.fade(0, 1, 1000)
+                audio.play()
+
+                this.audioPlayer.push({
+                    src: aud.src,
+                    type: aud.type,
+                    playing: aud.type === "@soundtrack",
+                    howl: audio
+                })
             }
         }
     }
@@ -171,6 +194,7 @@ export class Game extends GUI {
     goBackToLastInteraction() {
         // TODO: fix undo after undoing everything
         // TODO: make loops undoable. unique ids when written maybe
+        // TODO: handle audio
         const undoData = this.history.undo()
 
         if (!undoData.lastBeforeInteraction) {
