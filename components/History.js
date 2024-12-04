@@ -12,10 +12,17 @@ export class History {
         localStorage.setItem(this.storageKey, JSON.stringify(this.items))
     }
 
-    put(item) {
-        this.items.push(item)
+    put(item, uniqueId) {
+        /**
+         * As the same passage can be recorded multiple times, we must
+         * ensure that they will not have the same memory reference.
+         */
+        const unlinked = { ...item }
+        unlinked.uniqueId = uniqueId || this.generateUniqueId()
+
+        this.items.push(unlinked)
         this.save()
-    }
+    }    
 
     getLast() {
         return this.items.slice(-1).pop()
@@ -24,21 +31,21 @@ export class History {
     undo() {
         let lastBeforeInteraction = null
         const removeList = []
-
+    
         for (let i = this.items.length - 1; i >= 0; i--) {
-            removeList.push(this.items[i].id)
+            removeList.push(this.items[i].uniqueId)
             if (this.items[i].type === 'out') {
                 lastBeforeInteraction = this.items[i - 1]
                 break
             }
         }
         this.removeLast(removeList.length)
-
+    
         return {
             removeList: removeList,
             lastBeforeInteraction: lastBeforeInteraction
         }
-    }
+    }   
 
     removeLast(qty) {
         this.items = this.items.slice(0, Math.max(0, this.items.length - qty))
@@ -49,4 +56,7 @@ export class History {
         localStorage.removeItem(this.storageKey)
     }
 
+    generateUniqueId() {
+        return '_' + Math.random().toString(36).substring(2, 11);
+    }    
 }

@@ -20,7 +20,7 @@ export class GUI {
         $('.img-overlay').fadeIn(200).find('img')[0].src = src
     }
     
-    mountMessage(passage) {
+    mountMessage(passage, uniqueId) {
         if (!passage.message.time) {
             const now = new Date()
             const hours = String(now.getHours()).padStart(2, '0')
@@ -42,7 +42,7 @@ export class GUI {
         
         const message = $('<div/>', {
             class: classes[passage.type],
-            'data-id': passage.id,
+            'data-id': uniqueId,
         })
             .append(imgElement)
             .append(`<span class="msg-text">${passage.message.text}</span>`)

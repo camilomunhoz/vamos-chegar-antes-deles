@@ -16,7 +16,7 @@ export class Game extends GUI {
     }
 
     start() {
-        $('.btn-undo').on('click', this.goBackToLastInteraction.bind(this))
+        $('.btn-undo').on('click', this.undoToLastInteraction.bind(this))
 
         this.playLastSoundtrack()
         this.setUndoAllowance()
@@ -24,7 +24,7 @@ export class Game extends GUI {
         if (this.history.items.length === 0) {
             this.step(this.story.start)
         } else {
-            this.writeHistory()
+            this.writeLocallySaved()
         }
     }
 
@@ -39,27 +39,29 @@ export class Game extends GUI {
     async step(passageId) {
         let passage = this.getPassageById(passageId);
 
-        if (this.end(passage)) {
+        if (await this.end(passage)) {
             return
         }
 
         let responsesIds = passage.goto
 
         if (this.allowWriting) {
-            await this.writeMessage(passage)
+            const uniqueId = await this.writeMessage(passage, 1000, true, true)
             if (!this.allowWriting) return
-            this.history.put(passage)
+
+            this.history.put(passage, uniqueId)
         } else {
             return
         }
 
         let current = this.getPassageById(passage.goto[0])
 
-        while (!this.end(current) && current.type !== 'out') {
+        while (! await this.end(current) && current.type !== 'out') {
             if (this.allowWriting) {
-                await this.writeMessage(current)
+                const uniqueId = await this.writeMessage(current, 1000, true, true)
                 if (!this.allowWriting) return
-                this.history.put(current)
+
+                this.history.put(current, uniqueId)
             } else {
                 return
             }
@@ -72,25 +74,55 @@ export class Game extends GUI {
             this.setResponses(responsesIds)
         }
     }
+  
+    /**
+     * In this function, the presence of delay is a synonym
+     * of a message being sent "live", different from when
+     * it is absent, which is likely to be from history.
+     */
+    async writeMessage(passage, delay = 1000, triggerAudios = true, generateUniqueId = false) {
+        if (!this.allowWriting) return
 
+        const animated = !!delay
+        const whitelist = ['in', 'out', 'info']
+        const uniqueId = generateUniqueId ? this.history.generateUniqueId() : passage.uniqueId
+        const $message = this.mountMessage(passage, uniqueId)
 
-    end(passage) {
-        const isEnd = passage.type === 'tail' && passage.message.text === '@end'
-        if (isEnd) {
-            // * temporary
-            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, audio: [], goto: []}
-
-            this.writeMessage(endPassage)
-            this.history.put(endPassage)
+        if (!_.contains(whitelist, passage.type)) {
+            return
         }
-        return isEnd
+
+        if (animated) {
+            $message.attr('style', 'display: none')
+
+            if (passage.message.delayMs) {
+                delay = passage.message.delayMs
+            }
+            await this.sleep(delay)
+            if (!this.allowWriting) return
+
+            await this.triggerTyping(passage.message.typingMs, passage.type)
+            if (!this.allowWriting) return
+        }
+        
+        if (triggerAudios) {
+            this.triggerAudios(passage.audio)
+        }
+        
+        $('.chat-box').append($message)
+
+        if (animated) {
+            // made that way to support future animations
+            $message.show(0, () => this.scrollDown())
+        }
+        return uniqueId
     }
 
-    getPassageById(passageId) {
-        return _.find(this.story.passages, {id: passageId})
-    }
-
-    writeHistory() {
+    /**
+     * Writes all the history saved on localStorage and
+     * resume the game from where it stopped.
+     */
+    writeLocallySaved() {
         this.writePassages(this.history.items)
 
         const lastPassage = this.history.getLast()
@@ -111,7 +143,7 @@ export class Game extends GUI {
      */
     writePassages(passages) {
         passages.forEach(passage => {
-            this.writeMessage(passage, false)
+            this.writeMessage(passage, false, false)
         })
     }
     
@@ -124,46 +156,10 @@ export class Game extends GUI {
 
         do {
             if (currentPassage) {
-                this.writeMessage(currentPassage, false)
+                this.writeMessage(currentPassage, false, false)
                 currentPassage = this.getPassageById(currentPassage.goto[0])
             }
         } while (currentPassage)
-    }
-
-    async writeMessage(passage, delay = 1000) {
-        if (!this.allowWriting) return
-
-        const whitelist = ['in', 'out', 'info']
-        const $message = this.mountMessage(passage)
-
-        if (!_.contains(whitelist, passage.type)) {
-            return
-        }
-
-        if (delay) {
-            $message.attr('style', 'display: none')
-
-            if (passage.message.delayMs) {
-                delay = passage.message.delayMs
-            }
-            await this.sleep(delay)
-            if (!this.allowWriting) return
-            await this.triggerTyping(passage.message.typingMs, passage.type)
-            if (!this.allowWriting) return
-            
-            /**
-             * Being here prevents sound triggering in
-             * passthrough writing (no delay), e.g. history restoring
-             */
-            this.triggerAudios(passage.audio)
-        }
-        
-        $('.chat-box').append($message)
-
-        if (delay) {
-            // made that way to support future animations
-            $message.show(0, () => this.scrollDown())
-        }
     }
 
     setResponses(responsesIds) {
@@ -182,11 +178,11 @@ export class Game extends GUI {
         const passage = this.getPassageById(passageId)
         this.allowWriting = true
 
-        $('.responses').slideUp(100, () => {
+        $('.responses').slideUp(100, async () => {
             $('.responses').empty()
             $('.input-trigger').addClass('disabled')
-            this.writeMessage(passage, false)
-            this.history.put(passage)
+            const uniqueId = await this.writeMessage(passage, false, true, true)
+            this.history.put(passage, uniqueId)
             this.scrollDown()
             this.step(passage.goto[0])
             this.setUndoAllowance()
@@ -266,11 +262,9 @@ export class Game extends GUI {
         }
     }
 
-    goBackToLastInteraction() {
-        // TODO: make loops undoable. unique ids when written maybe
-        if (!this.allowUndo) {
-            return
-        }
+    undoToLastInteraction() {
+        if (!this.allowUndo) return
+        
         this.allowWriting = false
 
         const undoData = this.history.undo()
@@ -280,9 +274,13 @@ export class Game extends GUI {
         }
 
         undoData.removeList.forEach(id => {
-            $(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`).hide(400, () => {
-                $(this).remove()
-            })
+            console.log(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`);
+            
+            $(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`)
+                .parent()
+                .hide(400, () => {
+                    $(this).remove()
+                })
         })
 
         $('.typing-bubble').hide(100)
@@ -302,5 +300,23 @@ export class Game extends GUI {
             this.allowUndo = false
             $('.btn-undo').addClass('disabled')
         }
+    }
+
+    /**
+     * Temporary end implementation
+     */
+    async end(passage) {
+        const isEnd = passage.type === 'tail' && passage.message.text === '@end'
+        if (isEnd) {
+            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, audio: [], goto: []}
+
+            const uniqueId = await this.writeMessage(endPassage, false, true, true)
+            this.history.put(endPassage, uniqueId)
+        }
+        return isEnd
+    }
+
+    getPassageById(passageId) {
+        return _.find(this.story.passages, {id: passageId})
     }
 } 
