@@ -8,7 +8,7 @@ export class Story {
             "1": "in",   // received message
             "4": "out",  // sent message
             "3": "info", // info box
-            "#ffffff": "tail", // start and endings
+            "#ffffff": 'logic', // any unprintable passages
         }
     }
 
@@ -42,13 +42,17 @@ export class Story {
                 }
                 return
             }
-            return {
-                id: node.id,
-                type: this.nodeTypes[node.color],
-                message: this.getPassageMessage(node),  
-                goto: this.getPassageGoTos(node),
-                image: null,
-                audio: [],
+            if (this.nodeTypes[node.color] === 'logic') {
+                return this.setLogicPassage(node)
+            } else {
+                return {
+                    id: node.id,
+                    type: this.nodeTypes[node.color],
+                    message: this.getPassageMessage(node),  
+                    goto: this.getPassageGoTos(node),
+                    image: null,
+                    audio: [],
+                }
             }
         }).filter(result => result !== null)
         
@@ -82,6 +86,50 @@ export class Story {
         }
     }
 
+    setLogicPassage(node) {       
+        const passage = {}
+        if (node.text === '@start') {
+            passage.operation = '@start'
+            passage.goto = this.getPassageGoTos(node)
+        }
+        else if (node.text === '@end') {
+            passage.operation = '@end'
+        }
+        else if (node.text.substring(0, 5) === '@set ') {
+            passage.operation = '@set'
+            
+            const [key, value] = node.text
+                                    .slice(5)
+                                    .split('=')
+                                    .map(el => el.trim())
+            passage.data = {
+                key: key,
+                value: value,
+            }
+        }
+        else if (node.text.substring(0, 4) === '@if ') {
+            passage.operation = '@if'
+            const gotoIds = this.getPassageGoTos(node)
+            
+            const gotos = _.filter(this.canvas.nodes, () => {
+                return item => item.id === gotoIds[0] || item.id === gotoIds[1]
+            })
+            
+            passage.data = {
+                key: node.text.slice(4),
+                goto: {
+                    true: _.find(gotos, { text: 'true' }).id,
+                    false: _.find(gotos, { text: 'false' }).id,
+                }
+            }
+        }
+        return {
+            id: node.id,
+            type: this.nodeTypes[node.color],
+            ...passage,
+        }
+    }
+
     cleanUpPassages() {
         this.passages = this.passages
             .filter(p => p !== undefined)
@@ -92,8 +140,7 @@ export class Story {
         const message = {
             time: null,
             delayMs: 0,
-            typingMs: 2000
-        
+            typingMs: 0/*2000*/
         }
         const lines = passage.text.split('\n')
         let directivesCount = 0
@@ -133,7 +180,7 @@ export class Story {
 
     getStartId() {
         return this.passages.find(p => {
-            return p?.type === 'tail' && p?.message.text === '@start'
+            return p?.type === 'logic' && p?.operation === '@start'
         })?.id
     }
 }

@@ -1,0 +1,36 @@
+{
+	"nodes":[
+		{"id":"fcb55eb8f98b9fc1","type":"group","x":-1600,"y":-1000,"width":320,"height":528,"label":"definitions"},
+		{"id":"b003773655a19473","type":"text","text":"tail\n\nmarque com\n@start - ponto inicial\n@end - ponto de fim","x":-1560,"y":-977,"width":250,"height":135,"color":"#ffffff"},
+		{"id":"b073f80a7e0faba0","type":"text","text":"narrador","x":-1560,"y":-797,"width":250,"height":60,"color":"3"},
+		{"id":"c2fabaa127ae9c3d","type":"text","text":"@t 99:99\nmensagem enviada","x":-1560,"y":-687,"width":250,"height":60,"color":"4"},
+		{"id":"c660390bbbf23a28","type":"text","text":"@t 99:99\nmensagem recebida","x":-1560,"y":-590,"width":250,"height":60,"color":"1"},
+		{"id":"9b854635087a6a46","type":"text","text":"@soundtrack","x":-895,"y":-842,"width":160,"height":50},
+		{"id":"af86cc72020cd358","type":"text","text":"vai pro banheiro","x":-645,"y":-692,"width":190,"height":60,"color":"4"},
+		{"id":"bf2c9f97c7854fe7","type":"text","text":"paramos aqui","x":-640,"y":-459,"width":180,"height":60,"color":"4"},
+		{"id":"0e379820246aff05","type":"file","file":"audio/reflective-melancholic-piano.mp3","x":-1040,"y":-1002,"width":400,"height":42},
+		{"id":"239047047b7d671a","type":"text","text":"estou na sala","x":-455,"y":-817,"width":203,"height":50,"color":"1"},
+		{"id":"082f379261f05e0c","type":"text","text":"e agora?","x":-455,"y":-571,"width":203,"height":50,"color":"1"},
+		{"id":"870b019bc69dc22b","type":"text","text":"@d 100\nHoje","x":-418,"y":-932,"width":130,"height":60,"color":"3"},
+		{"id":"5947e06c8b89881b","type":"text","text":"@end","x":-409,"y":-332,"width":157,"height":60,"color":"#ffffff"},
+		{"id":"6d473d8c1028921d","type":"text","text":"vai pra copa","x":-275,"y":-692,"width":180,"height":60,"color":"4"},
+		{"id":"f711194773845f77","type":"text","text":"volta pra sala","x":-185,"y":-459,"width":160,"height":60,"color":"4"},
+		{"id":"9d1d2bbfd01e0c89","type":"text","text":"@soundtrack","x":46,"y":-817,"width":160,"height":50},
+		{"id":"18c1adbcf1effa3c","type":"file","file":"audio/Corny Candy - The Soundlings.mp3","x":-74,"y":-1009,"width":400,"height":42}
+	],
+	"edges":[
+		{"id":"393606f43b53b878","fromNode":"239047047b7d671a","fromSide":"bottom","toNode":"af86cc72020cd358","toSide":"top"},
+		{"id":"55819378660d080f","fromNode":"239047047b7d671a","fromSide":"bottom","toNode":"6d473d8c1028921d","toSide":"top"},
+		{"id":"b2bc0974f226a39a","fromNode":"6d473d8c1028921d","fromSide":"bottom","toNode":"082f379261f05e0c","toSide":"top"},
+		{"id":"3bb193d57894dc64","fromNode":"af86cc72020cd358","fromSide":"bottom","toNode":"082f379261f05e0c","toSide":"top"},
+		{"id":"f50c3a023e5ea479","fromNode":"082f379261f05e0c","fromSide":"bottom","toNode":"bf2c9f97c7854fe7","toSide":"top"},
+		{"id":"c21651399367fcbf","fromNode":"082f379261f05e0c","fromSide":"bottom","toNode":"f711194773845f77","toSide":"top"},
+		{"id":"4354872f256ba273","fromNode":"f711194773845f77","fromSide":"right","toNode":"239047047b7d671a","toSide":"right"},
+		{"id":"62bb7d82dddece67","fromNode":"bf2c9f97c7854fe7","fromSide":"bottom","toNode":"5947e06c8b89881b","toSide":"left"},
+		{"id":"7c71dd628a42038a","fromNode":"870b019bc69dc22b","fromSide":"bottom","toNode":"239047047b7d671a","toSide":"top"},
+		{"id":"20739423b8af75ac","fromNode":"18c1adbcf1effa3c","fromSide":"bottom","toNode":"9d1d2bbfd01e0c89","toSide":"right"},
+		{"id":"823b7b91c965ed00","fromNode":"9d1d2bbfd01e0c89","fromSide":"left","toNode":"6d473d8c1028921d","toSide":"right"},
+		{"id":"fc0edecfd330dbe4","fromNode":"0e379820246aff05","fromSide":"bottom","toNode":"9b854635087a6a46","toSide":"left"},
+		{"id":"779f7cb66ed90ce2","fromNode":"9b854635087a6a46","fromSide":"bottom","toNode":"af86cc72020cd358","toSide":"left"}
+	]
+}

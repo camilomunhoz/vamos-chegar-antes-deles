@@ -6,7 +6,7 @@ $(async () => {
     const story = new Story()
     const backstory = new Story()
 
-    await story.setup("/obsidian/story.canvas")
+    await story.setup("/obsidian/example3.canvas")
     // await backstory.setup("/obsidian/backstory.canvas")
     
     // game.setStory(backstory)

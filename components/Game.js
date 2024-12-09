@@ -5,6 +5,7 @@ export class Game extends GUI {
     constructor(gameName) {
         super()
         this.story = null
+        this.vars = new VariableManager(gameName)
         this.history = new History(gameName)
         this.audioPlayer = []
         this.allowWriting = true
@@ -46,7 +47,7 @@ export class Game extends GUI {
         let responsesIds = passage.goto
 
         if (this.allowWriting) {
-            const uniqueId = await this.writeMessage(passage, 1000, true, true)
+            const uniqueId = await this.writeMessage(passage, 0/*1000*/, true, true)
             if (!this.allowWriting) return
 
             this.history.put(passage, uniqueId)
@@ -58,7 +59,7 @@ export class Game extends GUI {
 
         while (! await this.end(current) && current.type !== 'out') {
             if (this.allowWriting) {
-                const uniqueId = await this.writeMessage(current, 1000, true, true)
+                const uniqueId = await this.writeMessage(current, 0/*1000*/, true, true)
                 if (!this.allowWriting) return
 
                 this.history.put(current, uniqueId)
@@ -80,17 +81,18 @@ export class Game extends GUI {
      * of a message being sent "live", different from when
      * it is absent, which is likely to be from history.
      */
-    async writeMessage(passage, delay = 1000, triggerAudios = true, generateUniqueId = false) {
+    async writeMessage(passage, delay = 0/*1000*/, triggerAudios = true, generateUniqueId = false) {
         if (!this.allowWriting) return
 
-        const animated = !!delay
-        const whitelist = ['in', 'out', 'info']
         const uniqueId = generateUniqueId ? this.history.generateUniqueId() : passage.uniqueId
-        const $message = this.mountMessage(passage, uniqueId)
-
+        const whitelist = ['in', 'out', 'info']
+        
         if (!_.contains(whitelist, passage.type)) {
-            return
+            return uniqueId
         }
+        
+        const animated = !!delay
+        const $message = this.mountMessage(passage, uniqueId)
 
         if (animated) {
             $message.attr('style', 'display: none')
@@ -274,8 +276,6 @@ export class Game extends GUI {
         }
 
         undoData.removeList.forEach(id => {
-            console.log(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`);
-            
             $(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`)
                 .parent()
                 .hide(400, () => {
@@ -306,7 +306,7 @@ export class Game extends GUI {
      * Temporary end implementation
      */
     async end(passage) {
-        const isEnd = passage.type === 'tail' && passage.message.text === '@end'
+        const isEnd = passage.type === 'logic' && passage.operation === '@end'
         if (isEnd) {
             const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, audio: [], goto: []}
 
