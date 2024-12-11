@@ -12,7 +12,7 @@ export class History {
         localStorage.setItem(this.storageKey, JSON.stringify(this.items))
     }
 
-    put(item, uniqueId) {
+    put(item, uniqueId = null) {
         /**
          * As the same passage can be recorded multiple times, we must
          * ensure that they will not have the same memory reference.
@@ -30,19 +30,19 @@ export class History {
 
     undo() {
         let lastBeforeInteraction = null
-        const removeList = []
+        const removedItems = []
     
         for (let i = this.items.length - 1; i >= 0; i--) {
-            removeList.push(this.items[i].uniqueId)
+            removedItems.push(this.items[i])
             if (this.items[i].type === 'out') {
                 lastBeforeInteraction = this.items[i - 1]
                 break
             }
         }
-        this.removeLast(removeList.length)
+        this.removeLast(removedItems.length)
     
         return {
-            removeList: removeList,
+            removedItems: removedItems,
             lastBeforeInteraction: lastBeforeInteraction
         }
     }   

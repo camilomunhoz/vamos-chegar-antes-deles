@@ -45,18 +45,20 @@ export class Game extends GUI {
     async step(passageId) {
         let currentPassage = this.story.getPassageById(passageId);
     
-        while (currentPassage) {
-            console.log(currentPassage);
-            
+        while (currentPassage)
+        {    
             if (currentPassage.type === 'command') {
                 const commandGotoId = await this.handleCommand(currentPassage)
-
-                if (currentPassage.operation === '@end'){
-                    return
+                if (this.allowWriting) {
+                    this.history.put(currentPassage)
+                    if (currentPassage.operation === '@end'){
+                        return
+                    } else {
+                        currentPassage = this.story.getPassageById(commandGotoId)
+                        continue
+                    }
                 } else {
-                    currentPassage = this.story.getPassageById(commandGotoId)
-                    console.log('Vai para: ', currentPassage);
-                    continue
+                    return
                 }
             }
     
@@ -73,13 +75,13 @@ export class Game extends GUI {
             const nextPassageId = currentPassage.goto[0];
             const nextPassage = this.story.getPassageById(nextPassageId);
     
+            // algo errado aqui. não é pra setar response se terminou
             if (await this.end(currentPassage) || nextPassage.type === 'out') {
                 if (this.allowWriting) {
                     this.setResponses(responsesIds);
                 }
                 return;
             }
-    
             currentPassage = nextPassage;
         }
     }
@@ -210,7 +212,9 @@ export class Game extends GUI {
             return
         }
 
-        undoData.removeList.forEach(id => {
+        this.vars.undo(this.history, undoData.removedItems)
+
+        undoData.removedItems.map(el => el.uniqueId).forEach(id => {
             $(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`)
                 .parent()
                 .hide(400, () => {
