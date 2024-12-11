@@ -14,6 +14,9 @@ export class Game extends GUI {
         this.allowUndo = false
     }
 
+    /**
+     * @param { Story } story instance 
+     */
     setStory(story) {
         this.story = story
     }
@@ -34,17 +37,27 @@ export class Game extends GUI {
     /**
      * Simulates a person typing on the chat.
      * 
-     * Writes a chain of "in" or "info" nodes until
-     * it waits an setup interaction nodes.
+     * Process a chain of "in", "info" or "command" nodes
+     * until there is need of player interaction.
      * 
      * @param { String } passageId - head of chain
      */
     async step(passageId) {
-        let currentPassage = this.getPassageById(passageId);
+        let currentPassage = this.story.getPassageById(passageId);
     
         while (currentPassage) {
-            if (await this.end(currentPassage)) {
-                return;
+            console.log(currentPassage);
+            
+            if (currentPassage.type === 'command') {
+                const commandGotoId = await this.handleCommand(currentPassage)
+
+                if (currentPassage.operation === '@end'){
+                    return
+                } else {
+                    currentPassage = this.story.getPassageById(commandGotoId)
+                    console.log('Vai para: ', currentPassage);
+                    continue
+                }
             }
     
             if (this.allowWriting) {
@@ -58,9 +71,9 @@ export class Game extends GUI {
     
             const responsesIds = currentPassage.goto;
             const nextPassageId = currentPassage.goto[0];
-            const nextPassage = this.getPassageById(nextPassageId);
+            const nextPassage = this.story.getPassageById(nextPassageId);
     
-            if (await this.end(nextPassage) || nextPassage.type === 'out') {
+            if (await this.end(currentPassage) || nextPassage.type === 'out') {
                 if (this.allowWriting) {
                     this.setResponses(responsesIds);
                 }
@@ -123,7 +136,7 @@ export class Game extends GUI {
         this.writePassages(this.history.items)
 
         const lastPassage = this.history.getLast()
-        const nextPassage = this.getPassageById(lastPassage.goto[0])
+        const nextPassage = this.story.getPassageById(lastPassage.goto[0])
 
         if (nextPassage) {
             if (nextPassage.type === 'out') {
@@ -149,19 +162,19 @@ export class Game extends GUI {
      * always through the first "goto" node.
      */
     writeBranchFrom(passageId) {
-        let currentPassage = this.getPassageById(passageId)
+        let currentPassage = this.story.getPassageById(passageId)
 
         do {
             if (currentPassage) {
                 this.writeMessage(currentPassage, false, false)
-                currentPassage = this.getPassageById(currentPassage.goto[0])
+                currentPassage = this.story.getPassageById(currentPassage.goto[0])
             }
         } while (currentPassage)
     }
 
     setResponses(responsesIds) {
         responsesIds.forEach(nodeId => {
-            const response = this.getPassageById(nodeId)
+            const response = this.story.getPassageById(nodeId)
             $('.responses').append(
                 $('<div/>', {class: 'response msg msg-out'})
                     .html(response.message.text)
@@ -172,7 +185,7 @@ export class Game extends GUI {
     }
 
     sendMessage(passageId) {
-        const passage = this.getPassageById(passageId)
+        const passage = this.story.getPassageById(passageId)
         this.allowWriting = true
 
         $('.responses').slideUp(100, async () => {
@@ -224,6 +237,29 @@ export class Game extends GUI {
         }
     }
 
+    async handleCommand(passage) {
+        let goto = null
+        let flag = null
+
+        switch (passage.operation) {
+            case '@set':
+                this.vars.set(passage.data.key, passage.data.value)
+                goto = passage.goto
+                break
+            case '@if':
+                flag = this.vars.get(passage.data.flag) || false
+                goto = passage.data.goto[''+flag]
+                break
+            case '@start':
+                goto = passage.goto
+                break
+            case '@end':
+                await this.end(passage)
+        }
+
+        return goto
+    }
+
     /**
      * Temporary end implementation
      */
@@ -236,9 +272,5 @@ export class Game extends GUI {
             this.history.put(endPassage, uniqueId)
         }
         return isEnd
-    }
-
-    getPassageById(passageId) {
-        return _.find(this.story.passages, {id: passageId})
     }
 } 

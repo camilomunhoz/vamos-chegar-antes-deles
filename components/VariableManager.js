@@ -12,6 +12,10 @@ export class VariableManager {
         localStorage.setItem(this.storageKey, JSON.stringify(this.items))
     }
 
+    get(key) {
+        return this.items[key]
+    }
+
     set(key, value) {
         this.items[key] = value
         this.save()

@@ -4,7 +4,7 @@ export class AudioPlayer {
     }
     
     triggerAudios(audioList) {
-        if (!audioList.length) return
+        if (!audioList?.length) return
 
         const currentSoundtrack = this.getCurrentSoundtracks()[0]
 

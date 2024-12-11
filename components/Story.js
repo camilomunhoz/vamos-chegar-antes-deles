@@ -21,6 +21,10 @@ export class Story {
         return await $.getJSON(path)
     }
 
+    getPassageById(passageId) {
+        return _.find(this.passages, {id: passageId})
+    }
+
     setPassages() {
         if (!this.canvas) {
             throw new Error('You must load an Obsidian Canvas first.')
@@ -43,7 +47,7 @@ export class Story {
                 return
             }
             if (this.nodeTypes[node.color] === 'command') {
-                return this.setcommandPassage(node)
+                return this.setCommandPassage(node)
             } else {
                 return {
                     id: node.id,
@@ -86,17 +90,18 @@ export class Story {
         }
     }
 
-    setcommandPassage(node) {       
+    setCommandPassage(node) {       
         const passage = {}
         if (node.text === '@start') {
             passage.operation = '@start'
-            passage.goto = this.getPassageGoTos(node)
+            passage.goto = this.getPassageGoTos(node)[0]
         }
         else if (node.text === '@end') {
             passage.operation = '@end'
         }
         else if (node.text.substring(0, 5) === '@set ') {
             passage.operation = '@set'
+            passage.goto = this.getPassageGoTos(node)[0]
             
             const [key, value] = node.text
                                     .slice(5)
@@ -111,15 +116,21 @@ export class Story {
             passage.operation = '@if'
             const gotoIds = this.getPassageGoTos(node)
             
-            const gotos = _.filter(this.canvas.nodes, () => {
-                return item => item.id === gotoIds[0] || item.id === gotoIds[1]
+            const gotos = _.filter(this.canvas.nodes, item => {
+                return item.id === gotoIds[0] || item.id === gotoIds[1]
             })
-            
+
+            const trueNode = _.find(gotos, { text: 'true' }).id
+            const falseNode = _.find(gotos, { text: 'false' }).id
+
+            const gotoTrueId = _.find(this.canvas.edges, { fromNode: trueNode }).toNode
+            const gotoFalseId = _.find(this.canvas.edges, { fromNode: falseNode }).toNode
+
             passage.data = {
-                key: node.text.slice(4),
+                flag: node.text.slice(4),
                 goto: {
-                    true: _.find(gotos, { text: 'true' }).id,
-                    false: _.find(gotos, { text: 'false' }).id,
+                    true: gotoTrueId,
+                    false: gotoFalseId,
                 }
             }
         }
