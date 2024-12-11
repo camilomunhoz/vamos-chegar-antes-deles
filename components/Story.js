@@ -8,7 +8,7 @@ export class Story {
             "1": "in",   // received message
             "4": "out",  // sent message
             "3": "info", // info box
-            "#ffffff": 'logic', // any unprintable passages
+            "#ffffff": 'command', // any unprintable passages
         }
     }
 
@@ -42,8 +42,8 @@ export class Story {
                 }
                 return
             }
-            if (this.nodeTypes[node.color] === 'logic') {
-                return this.setLogicPassage(node)
+            if (this.nodeTypes[node.color] === 'command') {
+                return this.setcommandPassage(node)
             } else {
                 return {
                     id: node.id,
@@ -86,7 +86,7 @@ export class Story {
         }
     }
 
-    setLogicPassage(node) {       
+    setcommandPassage(node) {       
         const passage = {}
         if (node.text === '@start') {
             passage.operation = '@start'
@@ -180,7 +180,7 @@ export class Story {
 
     getStartId() {
         return this.passages.find(p => {
-            return p?.type === 'logic' && p?.operation === '@start'
+            return p?.type === 'command' && p?.operation === '@start'
         })?.id
     }
 }

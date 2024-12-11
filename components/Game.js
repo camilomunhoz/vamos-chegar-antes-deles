@@ -1,5 +1,7 @@
 import { GUI } from './GUI.js'
 import { History } from './History.js'
+import { VariableManager } from './VariableManager.js'
+import { AudioPlayer } from './AudioPlayer.js'
 
 export class Game extends GUI {
     constructor(gameName) {
@@ -7,7 +9,7 @@ export class Game extends GUI {
         this.story = null
         this.vars = new VariableManager(gameName)
         this.history = new History(gameName)
-        this.audioPlayer = []
+        this.audioPlayer = new AudioPlayer()
         this.allowWriting = true
         this.allowUndo = false
     }
@@ -19,7 +21,7 @@ export class Game extends GUI {
     start() {
         $('.btn-undo').on('click', this.undoToLastInteraction.bind(this))
 
-        this.playLastSoundtrack()
+        this.audioPlayer.playLastSoundtrack(this.history)
         this.setUndoAllowance()
 
         if (this.history.items.length === 0) {
@@ -38,41 +40,34 @@ export class Game extends GUI {
      * @param { String } passageId - head of chain
      */
     async step(passageId) {
-        let passage = this.getPassageById(passageId);
-
-        if (await this.end(passage)) {
-            return
-        }
-
-        let responsesIds = passage.goto
-
-        if (this.allowWriting) {
-            const uniqueId = await this.writeMessage(passage, 0/*1000*/, true, true)
-            if (!this.allowWriting) return
-
-            this.history.put(passage, uniqueId)
-        } else {
-            return
-        }
-
-        let current = this.getPassageById(passage.goto[0])
-
-        while (! await this.end(current) && current.type !== 'out') {
-            if (this.allowWriting) {
-                const uniqueId = await this.writeMessage(current, 0/*1000*/, true, true)
-                if (!this.allowWriting) return
-
-                this.history.put(current, uniqueId)
-            } else {
-                return
+        let currentPassage = this.getPassageById(passageId);
+    
+        while (currentPassage) {
+            if (await this.end(currentPassage)) {
+                return;
             }
-
-            responsesIds = current.goto
-            current = this.getPassageById(current.goto[0])
-        }
-
-        if (this.allowWriting) {
-            this.setResponses(responsesIds)
+    
+            if (this.allowWriting) {
+                const uniqueId = await this.writeMessage(currentPassage, 0/*1000*/, true, true);
+                if (!this.allowWriting) return;
+    
+                this.history.put(currentPassage, uniqueId);
+            } else {
+                return;
+            }
+    
+            const responsesIds = currentPassage.goto;
+            const nextPassageId = currentPassage.goto[0];
+            const nextPassage = this.getPassageById(nextPassageId);
+    
+            if (await this.end(nextPassage) || nextPassage.type === 'out') {
+                if (this.allowWriting) {
+                    this.setResponses(responsesIds);
+                }
+                return;
+            }
+    
+            currentPassage = nextPassage;
         }
     }
   
@@ -108,7 +103,7 @@ export class Game extends GUI {
         }
         
         if (triggerAudios) {
-            this.triggerAudios(passage.audio)
+            this.audioPlayer.triggerAudios(passage.audio)
         }
         
         $('.chat-box').append($message)
@@ -191,79 +186,6 @@ export class Game extends GUI {
         })
     }
 
-    triggerAudios(audioList) {
-        if (!audioList.length) return
-
-        for (const aud of audioList) {
-            if (this.audioPlayer.length && aud.type === '@soundtrack') {
-                this.stopCurrentSoundtrack(500)
-            }
-            this.playAudio(aud)
-        }
-    }
-
-    playAudio(aud) {
-        const alreadyPlayed = _.find(this.audioPlayer, { src: aud.src })
-
-        if (alreadyPlayed) {
-            alreadyPlayed.howl.play()
-            alreadyPlayed.playing = true
-        } else {
-            const audio = new Howl({
-                src: aud.src,
-                loop: aud.loop,
-                volume: 0,
-                onplay: () => audio.fade(0, 1, 1000)
-            })
-            audio.play()
-
-            this.audioPlayer.push({
-                src: aud.src,
-                type: aud.type,
-                playing: aud.type === "@soundtrack",
-                howl: audio
-            })
-        }
-    }
-
-    stopCurrentSoundtrack(fadeMs = 0) {        
-        const current = _.where(this.audioPlayer, { playing: true })
-        if (current.length) {
-            for (let track of current) {
-                if (fadeMs) {
-                    track.howl.fade(1, 0, fadeMs)
-                    setTimeout(() => track.howl.stop(), fadeMs)
-                } else {
-                    track.howl.stop()
-                }
-                track.playing = false
-            }
-        }
-    }
-
-    playLastSoundtrack() {
-        const current = _.find(this.audioPlayer, { playing: true })
-        let target = null
-
-        // Find the last soundtrack in the history
-        for (let i = this.history.items.length - 1; i >= 0; i--) {    
-            if (this.history.items[i].audio.length) {
-                const track = _.find(this.history.items[i].audio, { type: '@soundtrack' })
-                if (track) {
-                    target = track
-                    break
-                }
-            }
-        }
-
-        if (target && (!current || target.src !== current.src)) {
-            if (current) {
-                this.stopCurrentSoundtrack()
-            }
-            this.playAudio(target)
-        }
-    }
-
     undoToLastInteraction() {
         if (!this.allowUndo) return
         
@@ -287,7 +209,7 @@ export class Game extends GUI {
         $('.responses').empty()
         this.setResponses(undoData.lastBeforeInteraction.goto)
 
-        this.playLastSoundtrack()
+        this.audioPlayer.playLastSoundtrack(this.history)
         this.setUndoAllowance()
         this.scrollDown()
     }
@@ -306,9 +228,9 @@ export class Game extends GUI {
      * Temporary end implementation
      */
     async end(passage) {
-        const isEnd = passage.type === 'logic' && passage.operation === '@end'
+        const isEnd = passage.type === 'command' && passage.operation === '@end'
         if (isEnd) {
-            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, audio: [], goto: []}
+            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, goto: []}
 
             const uniqueId = await this.writeMessage(endPassage, false, true, true)
             this.history.put(endPassage, uniqueId)
