@@ -4,6 +4,8 @@ import { Game } from './components/Game.js'
 $(async () => {
     const game = new Game('vamos-chegar-antes-deles')
     const story = new Story()
+    // story.setDebug(true)
+
     const backstory = new Story()
 
     await story.setup("/obsidian/story.canvas")
@@ -18,5 +20,5 @@ $(async () => {
     game.scrollDown()
 
     // console.log(backstory);
-    console.log(story);
+    // console.log(story);
 })

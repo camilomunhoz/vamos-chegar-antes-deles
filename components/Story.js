@@ -3,6 +3,7 @@ export class Story {
         this.passages = []
         this.canvas = null
         this.start = null
+        this.debug = false
 
         this.nodeTypes = {
             "1": "in",   // received message
@@ -15,6 +16,10 @@ export class Story {
     async setup(canvasPath) {
         this.canvas = await this.loadObsidianCanvas(canvasPath)
         this.setPassages()
+    }
+
+    setDebug(bool) {
+        this.debug = bool
     }
 
     async loadObsidianCanvas(path) {
@@ -151,7 +156,7 @@ export class Story {
         const message = {
             time: null,
             delayMs: 0,
-            typingMs: 0/*2000*/
+            typingMs: this.debug ? 0 : 2000
         }
         const lines = passage.text.split('\n')
         let directivesCount = 0

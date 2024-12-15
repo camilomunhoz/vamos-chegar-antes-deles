@@ -6,6 +6,7 @@ import { AudioPlayer } from './AudioPlayer.js'
 export class Game extends GUI {
     constructor(gameName) {
         super()
+        this.debug = false
         this.story = null
         this.vars = new VariableManager(gameName)
         this.history = new History(gameName)
@@ -19,6 +20,11 @@ export class Game extends GUI {
      */
     setStory(story) {
         this.story = story
+        this.debug = story.debug
+    }
+
+    setDebug(bool) {
+        this.debug = bool
     }
 
     start() {
@@ -63,7 +69,7 @@ export class Game extends GUI {
             }
     
             if (this.allowWriting) {
-                const uniqueId = await this.writeMessage(currentPassage, 0/*1000*/, true, true);
+                const uniqueId = await this.writeMessage(currentPassage, this.debug ? 0 : 1000, true, true);
                 if (!this.allowWriting) return;
     
                 this.history.put(currentPassage, uniqueId);
@@ -91,8 +97,9 @@ export class Game extends GUI {
      * of a message being sent "live", different from when
      * it is absent, which is likely to be from history.
      */
-    async writeMessage(passage, delay = 0/*1000*/, triggerAudios = true, generateUniqueId = false) {
+    async writeMessage(passage, delay = 1000, triggerAudios = true, generateUniqueId = false) {
         if (!this.allowWriting) return
+        delay = this.debug ? 0 : delay
 
         const uniqueId = generateUniqueId ? this.history.generateUniqueId() : passage.uniqueId
         const whitelist = ['in', 'out', 'info']
