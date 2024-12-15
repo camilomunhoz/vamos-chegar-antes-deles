@@ -242,26 +242,26 @@ export class Game extends GUI {
     }
 
     async handleCommand(passage) {
-        let goto = null
+        let gotoId = null
         let flag = null
 
         switch (passage.operation) {
             case '@set':
                 this.vars.set(passage.data.key, passage.data.value)
-                goto = passage.goto
+                gotoId = passage.goto
                 break
             case '@if':
                 flag = this.vars.get(passage.data.flag) || false
-                goto = passage.data.goto[''+flag]
+                gotoId = passage.data.goto[''+flag]
                 break
             case '@start':
-                goto = passage.goto
+                gotoId = passage.goto
                 break
             case '@end':
                 await this.end(passage)
         }
 
-        return goto
+        return gotoId
     }
 
     /**
