@@ -169,14 +169,22 @@ export class Game extends GUI {
     /**
      * Take one node and crawl all the way to an end,
      * always through the first "goto" node.
+     * 
+     * Kinda broken, does not support conditional nodes
      */
     writeBranchFrom(passageId) {
         let currentPassage = this.story.getPassageById(passageId)
-
+        let nextPassageId = null
+a        
         do {
             if (currentPassage) {
                 this.writeMessage(currentPassage, false, false)
-                currentPassage = this.story.getPassageById(currentPassage.goto[0])
+                if (currentPassage.operation === '@start') {
+                    nextPassageId = currentPassage.goto
+                } else {
+                    nextPassageId = currentPassage.goto[0]
+                }
+                currentPassage = this.story.getPassageById(nextPassageId)
             }
         } while (currentPassage)
     }
