@@ -72,10 +72,12 @@ html, body {
 .chat-header .right {
     display: flex;
     align-items: center;
-    gap: 10px;
     height: 100%;
 }
-.btn-undo {
+.chat-header .left {
+    gap: 10px;
+}
+._btn {
     border-radius: 99px;
     padding-right: 3px;
     height: 30px;
@@ -86,7 +88,7 @@ html, body {
     transition: background .2s ease;
     cursor: pointer;
 }
-.btn-undo:hover {
+._btn:hover {
     background-color: #fff2;
 }
 .chat-img {
@@ -182,8 +184,7 @@ html, body {
     padding: 10px;
     background-color: #202C33;
 }
-.response,
-.input-trigger {
+._btn-large {
     padding: .8em 1em;
     color: #fff6;
     background-color: #2a3942;
@@ -191,8 +192,7 @@ html, body {
     transition: background .2s ease, opacity .4s ease;
     cursor: pointer;
 }
-.response:hover,
-.input-trigger:hover {
+._btn-large:hover {
     background-color: #344148;
 }
 .responses {
@@ -209,6 +209,18 @@ html, body {
 .responses::-webkit-scrollbar-thumb {
     background-color: #fff6;
     border-radius: 99px;
+}
+
+.configs {
+    padding: 1em;
+    background-color: #202C33;
+    display: none;
+}
+.configs.opened {
+    display: block;
+}
+.configs ._btn-large {
+    margin-bottom: 0.7em;
 }
 
 @media screen and (max-width: 500px) {

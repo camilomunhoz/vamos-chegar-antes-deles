@@ -8,6 +8,7 @@ export class Game extends GUI {
         super()
         this.debug = false
         this.story = null
+        this.gameName = gameName
         this.vars = new VariableManager(gameName)
         this.history = new History(gameName)
         this.audioPlayer = new AudioPlayer()
@@ -20,15 +21,22 @@ export class Game extends GUI {
      */
     setStory(story) {
         this.story = story
-        this.debug = story.debug
+        story.debug = this.debug
     }
 
-    setDebug(bool) {
-        this.debug = bool
+    toggleDebug() {
+        this.debug = !this.debug
+        this.story.debug = this.debug
+        if (this.debug) {
+            $('.btn-debug .flag').html('ativado')
+        } else {
+            $('.btn-debug .flag').html('desativado')
+        }
     }
 
     start() {
-        $('.btn-undo').on('click', this.undoToLastInteraction.bind(this))
+        $('.btn-undo').off('click').on('click', this.undoToLastInteraction.bind(this))
+        $('.btn-debug').off('click').on('click', this.toggleDebug.bind(this))
 
         this.audioPlayer.playLastSoundtrack(this.history)
         this.setUndoAllowance()
@@ -40,6 +48,16 @@ export class Game extends GUI {
         }
     }
 
+    reset() {
+        this.audioPlayer.stopCurrentSoundtracks()
+        this.history.clear()
+        this.vars.clear()
+        this.allowWriting = true
+        this.setUndoAllowance()
+        $('.responses').empty()
+        $('.chat-box').empty()
+    }
+
     /**
      * Simulates a person typing on the chat.
      * 
@@ -49,7 +67,7 @@ export class Game extends GUI {
      * @param { String } passageId - head of chain
      */
     async step(passageId) {
-        let currentPassage = this.story.getPassageById(passageId);
+        let currentPassage = this.story.getPassageById(passageId)
     
         while (currentPassage)
         {    
@@ -69,26 +87,27 @@ export class Game extends GUI {
             }
     
             if (this.allowWriting) {
-                const uniqueId = await this.writeMessage(currentPassage, this.debug ? 0 : 1000, true, true);
-                if (!this.allowWriting) return;
+                const uniqueId = await this.writeMessage(currentPassage, this.debug ? 0 : 1000, true, true)
+                if (!this.allowWriting) return
     
-                this.history.put(currentPassage, uniqueId);
+                this.history.put(currentPassage, uniqueId)
             } else {
-                return;
+                return
             }
     
-            const responsesIds = currentPassage.goto;
-            const nextPassageId = currentPassage.goto[0];
-            const nextPassage = this.story.getPassageById(nextPassageId);
+            const responsesIds = currentPassage.goto
+            const nextPassageId = currentPassage.goto[0]
+            const nextPassage = this.story.getPassageById(nextPassageId)
     
             // algo errado aqui. não é pra setar response se terminou
             if (await this.end(currentPassage, true) || nextPassage.type === 'out') {
                 if (this.allowWriting) {
-                    this.setResponses(responsesIds);
+                    this.setResponses(responsesIds)
+                    this.scrollDown()
                 }
-                return;
+                return
             }
-            currentPassage = nextPassage;
+            currentPassage = nextPassage
         }
     }
   
@@ -124,7 +143,7 @@ export class Game extends GUI {
             if (!this.allowWriting) return
         }
         
-        if (triggerAudios) {
+        if (triggerAudios && !this.debug) {
             this.audioPlayer.triggerAudios(passage.audio)
         }
         
@@ -193,7 +212,7 @@ export class Game extends GUI {
         responsesIds.forEach(nodeId => {
             const response = this.story.getPassageById(nodeId)
             $('.responses').append(
-                $('<div/>', {class: 'response msg msg-out'})
+                $('<div/>', {class: 'response _btn-large msg msg-out'})
                     .html(response.message.text)
                     .on('click', () => { this.sendMessage(nodeId) })
             )
@@ -292,7 +311,7 @@ export class Game extends GUI {
     async end(passage, triggerAudios = false) {
         const isEnd = passage.type === 'command' && passage.operation === '@end'
         if (isEnd) {
-            if (triggerAudios) {
+            if (triggerAudios && !this.debug) {
                 this.audioPlayer.stopCurrentSoundtracks(500)
                 this.audioPlayer.play({
                     type: '@soundtrack',

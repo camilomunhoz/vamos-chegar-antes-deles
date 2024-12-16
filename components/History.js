@@ -54,6 +54,7 @@ export class History {
 
     clear() {
         localStorage.removeItem(this.storageKey)
+        this.items = []
     }
 
     generateUniqueId() {

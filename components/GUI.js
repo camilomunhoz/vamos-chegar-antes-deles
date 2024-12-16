@@ -13,6 +13,14 @@ export class GUI {
             $('.responses').slideToggle(100);
         })
         $('.chat-box, .chat-header').on('click', () => $('.responses').slideUp(100))
+
+        $('.chat-box, .chat-actions').on('click', () => {
+            if ($('.configs').hasClass('opened')) {
+                this.toggleConfigs()
+            }
+        })
+
+        $('.btn-configs').on('click', this.toggleConfigs)
     }
 
     expandImage(e) {
@@ -108,5 +116,13 @@ export class GUI {
 
     scrollDown(ms = 200) {
         $('.chat-box').scrollTo('max', ms)
+    }
+
+    toggleConfigs() {
+        if ($('.configs').hasClass('opened')) {
+            $('.configs').removeClass('opened')
+        } else {
+            $('.configs').addClass('opened')
+        }
     }
 }

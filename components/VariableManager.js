@@ -53,5 +53,6 @@ export class VariableManager {
 
     clear() {
         localStorage.removeItem(this.storageKey)
+        this.items = {}
     }
 }

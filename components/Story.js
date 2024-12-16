@@ -18,10 +18,6 @@ export class Story {
         this.setPassages()
     }
 
-    setDebug(bool) {
-        this.debug = bool
-    }
-
     async loadObsidianCanvas(path) {
         return await $.getJSON(path)
     }
