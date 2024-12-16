@@ -82,7 +82,7 @@ export class Game extends GUI {
             const nextPassage = this.story.getPassageById(nextPassageId);
     
             // algo errado aqui. não é pra setar response se terminou
-            if (await this.end(currentPassage) || nextPassage.type === 'out') {
+            if (await this.end(currentPassage, true) || nextPassage.type === 'out') {
                 if (this.allowWriting) {
                     this.setResponses(responsesIds);
                 }
@@ -175,7 +175,7 @@ export class Game extends GUI {
     writeBranchFrom(passageId) {
         let currentPassage = this.story.getPassageById(passageId)
         let nextPassageId = null
-a        
+        
         do {
             if (currentPassage) {
                 this.writeMessage(currentPassage, false, false)
@@ -228,18 +228,25 @@ a
         }
 
         this.vars.undo(this.history, undoData.removedItems)
+        $('.input-trigger').addClass('disabled')
 
         undoData.removedItems.map(el => el.uniqueId).forEach(id => {
             $(`.msg[data-id="${id}"], .chat-box-info[data-id="${id}"]`)
                 .parent()
                 .hide(400, () => {
                     $(this).remove()
+                    /**
+                     * Below hides a bug that allows to keep writing
+                     * when a response is sent too fast after undo.
+                     */
+                    setTimeout(() => {
+                        $('.responses').empty()
+                        this.setResponses(undoData.lastBeforeInteraction.goto)
+                    }, 500)
                 })
         })
 
         $('.typing-bubble').hide(100)
-        $('.responses').empty()
-        this.setResponses(undoData.lastBeforeInteraction.goto)
 
         this.audioPlayer.playLastSoundtrack(this.history)
         this.setUndoAllowance()
@@ -273,7 +280,7 @@ a
                 gotoId = passage.goto
                 break
             case '@end':
-                await this.end(passage)
+                await this.end(passage, true)
         }
 
         return gotoId
@@ -282,10 +289,18 @@ a
     /**
      * Temporary end implementation
      */
-    async end(passage) {
+    async end(passage, triggerAudios = false) {
         const isEnd = passage.type === 'command' && passage.operation === '@end'
         if (isEnd) {
-            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'fim!'}, goto: []}
+            if (triggerAudios) {
+                this.audioPlayer.stopCurrentSoundtracks(500)
+                this.audioPlayer.play({
+                    type: '@soundtrack',
+                    loop: true,
+                    src: './obsidian/audio/soundtrack/Blue Screen Of Death - The Soundlings.mp3',
+                })
+            }
+            const endPassage = {id: 'whatever123', type: 'info', message: {text: 'Fim'}, goto: []}
 
             const uniqueId = await this.writeMessage(endPassage, false, true, true)
             this.history.put(endPassage, uniqueId)
