@@ -1,9 +1,17 @@
 export class AudioPlayer {
     constructor() {
-        this.tracks = []
+        this.tracks = [{
+            src: './obsidian/audio/pop.mp3',
+            type: '@sfx',
+            playing: false,
+            howl: new Howl({ src: ['./obsidian/audio/pop.mp3'], volume: 0.1 })
+        }]
     }
     
     triggerAudios(audioList) {
+        // pop sfx
+        _.find(this.tracks, { src: './obsidian/audio/pop.mp3' }).howl.play()
+
         if (!audioList?.length) return
 
         const currentSoundtrack = this.getCurrentSoundtracks()[0]
