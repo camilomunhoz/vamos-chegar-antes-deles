@@ -229,6 +229,11 @@ body {
     justify-self: end;
     line-height: 1;
 }
+.forwarded-flag {
+    color: #fff6;
+    font-style: italic;
+    margin-bottom: 0.3em;
+}
 .img-overlay {
     background-color: #000d;
     display: flex;

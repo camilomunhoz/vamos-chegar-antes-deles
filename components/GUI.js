@@ -86,6 +86,7 @@ export class GUI {
             class: classes[passage.type],
             'data-id': uniqueId,
         })
+            .append(passage.message.forwarded ? '<div class="forwarded-flag">Encaminhada</div>' : '')
             .append(imgElement)
             .append(`<span class="msg-text">${passage.message.text}</span>`)
             .append(passage.type !== 'info' ? `

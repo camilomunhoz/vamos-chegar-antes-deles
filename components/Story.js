@@ -155,7 +155,8 @@ export class Story {
         const message = {
             time: null,
             delayMs: 0,
-            typingMs: this.debug ? 0 : 2000
+            typingMs: this.debug ? 0 : 2000,
+            forwarded: false
         }
         const lines = passage.text.split('\n')
         let directivesCount = 0
@@ -169,6 +170,11 @@ export class Story {
             // delay directive
             else if (line.substring(0, 2) === '@d') {
                 message.delayMs = line.slice(2).trim()
+                directivesCount++
+            }
+            // delay directive
+            else if (line.substring(0, 4) === '@fwd') {
+                message.forwarded = true
                 directivesCount++
             }
             // message reaction

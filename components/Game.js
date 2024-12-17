@@ -58,7 +58,7 @@ export class Game extends GUI {
         this.setUndoAllowance()
         $('.input-trigger').addClass('disabled')
         $('.responses').empty()
-        $('.msg-out[data-id], .msg-in[data-id]').hide(400)
+        $('.msg-out[data-id], .msg-in[data-id], .chat-box-info[data-id]').hide(400)
         setTimeout(() => {
             this.allowWriting = true
             this.start()
