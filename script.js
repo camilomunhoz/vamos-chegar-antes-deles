@@ -18,15 +18,5 @@ async function boot() {
     
     game.setStory(story)
     game.start()
-    game.scrollDown()
-
-    // console.log(backstory);
-    // console.log(story);
-
-    $('.btn-restart').off('click').on('click', restart)
-}
-
-async function restart() {
-    game.reset()
-    await boot()
+    game.scrollDown(200)
 }

@@ -23,7 +23,9 @@ export class GUI {
         $('.btn-configs').on('click', this.toggleConfigs)
 
         $('.btn-start').on('click', () => this.bringEnvironment('game'))
-        this.bringEnvironment('main-menu')
+
+        // this.bringEnvironment('main-menu')
+        $('#game').show()
 
         $('.btn-map').on('click', () => this.bringEnvironment('map', 300))
         $('.btn-close-map').on('click', () => this.bringEnvironment('game', 300))
@@ -42,11 +44,13 @@ export class GUI {
                             $('.cellphone').addClass('up')
                             setTimeout(() => {
                                 $('.cellphone').addClass('on')
-                                if (!$('.cellphone').hasClass('unlocked')) {
+                                if ($('.cellphone').hasClass('locked')) {
                                     new Howl({src: './obsidian/audio/sfx/click.mp3'}).play()
                                 }
-                                $('.cellphone').addClass('unlocked')
-                                setTimeout(() => this.scrollDown(), 1000)
+                                setTimeout(() => {
+                                    this.scrollDown()
+                                    $('.cellphone').removeClass('locked')
+                                }, 1000)
                             }, 1200);
                         }
                     })

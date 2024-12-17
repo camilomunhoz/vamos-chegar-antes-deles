@@ -37,6 +37,7 @@ export class Game extends GUI {
     start() {
         $('.btn-undo').off('click').on('click', this.undoToLastInteraction.bind(this))
         $('.btn-debug').off('click').on('click', this.toggleDebug.bind(this))
+        $('.btn-restart').off('click').on('click', this.restart.bind(this))
 
         this.audioPlayer.playLastSoundtrack(this.history)
         this.setUndoAllowance()
@@ -48,14 +49,20 @@ export class Game extends GUI {
         }
     }
 
-    reset() {
+    restart() {
+        this.toggleConfigs()
         this.audioPlayer.stopCurrentSoundtracks()
         this.history.clear()
         this.vars.clear()
-        this.allowWriting = true
+        this.allowWriting = false
         this.setUndoAllowance()
+        $('.input-trigger').addClass('disabled')
         $('.responses').empty()
-        $('.chat-box').empty()
+        $('.msg-out[data-id], .msg-in[data-id]').hide(400)
+        setTimeout(() => {
+            this.allowWriting = true
+            this.start()
+        }, 2000)
     }
 
     /**

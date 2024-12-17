@@ -51,6 +51,11 @@ body {
 .cellphone.up {
     transform: translateY(0) rotate(0);
 }
+.cellphone.locked {
+    user-select: none;
+    pointer-events: none;
+    cursor: pointer;
+}
 .cellphone.on .shine {
     opacity: .1;
 }
