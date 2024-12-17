@@ -6,7 +6,7 @@ export class GUI {
     setup() {
         // Image visualization
         $('.img-overlay').on('click', (e) => $(e.currentTarget).fadeOut(100))
-        $('img').on('click', this.expandImage)
+        $('.cellphone img').on('click', this.expandImage)
 
         // Input events
         $('.input-trigger').on('click', () => {
@@ -24,20 +24,28 @@ export class GUI {
 
         $('.btn-start').on('click', () => this.bringEnvironment('game'))
         this.bringEnvironment('main-menu')
+
+        $('.btn-map').on('click', () => this.bringEnvironment('map', 300))
+        $('.btn-close-map').on('click', () => this.bringEnvironment('game', 300))
     }
 
-    bringEnvironment(id) {
+    bringEnvironment(id, fadeMs = 1000) {
         $('.environment.current')
             .removeClass('current')
-            .fadeOut(1000, () => {
+            .fadeOut(fadeMs, () => {
+
                 $('.environment#'+id)
                     .addClass('current')
-                    .fadeIn(1000, () => {
+                    .fadeIn(fadeMs, () => {
+
                         if (id === 'game') {
                             $('.cellphone').addClass('up')
                             setTimeout(() => {
                                 $('.cellphone').addClass('on')
-                                new Howl({src: './obsidian/audio/sfx/click.mp3'}).play()
+                                if (!$('.cellphone').hasClass('unlocked')) {
+                                    new Howl({src: './obsidian/audio/sfx/click.mp3'}).play()
+                                }
+                                $('.cellphone').addClass('unlocked')
                                 setTimeout(() => this.scrollDown(), 1000)
                             }, 1200);
                         }
