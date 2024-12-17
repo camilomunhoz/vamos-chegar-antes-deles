@@ -21,6 +21,28 @@ export class GUI {
         })
 
         $('.btn-configs').on('click', this.toggleConfigs)
+
+        $('.btn-start').on('click', () => this.bringEnvironment('game'))
+        this.bringEnvironment('main-menu')
+    }
+
+    bringEnvironment(id) {
+        $('.environment.current')
+            .removeClass('current')
+            .fadeOut(1000, () => {
+                $('.environment#'+id)
+                    .addClass('current')
+                    .fadeIn(1000, () => {
+                        if (id === 'game') {
+                            $('.cellphone').addClass('up')
+                            setTimeout(() => {
+                                $('.cellphone').addClass('on')
+                                new Howl({src: './obsidian/audio/sfx/click.mp3'}).play()
+                                setTimeout(() => this.scrollDown(), 1000)
+                            }, 1200);
+                        }
+                    })
+            })
     }
 
     expandImage(e) {

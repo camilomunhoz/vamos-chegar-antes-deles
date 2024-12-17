@@ -189,7 +189,6 @@
 		{"id":"26ec3eb9ab5a8d5d","type":"text","text":"@d 2000\nOu procurar onde comprar outra escuta","x":-3040,"y":1459,"width":224,"height":90,"color":"1"},
 		{"id":"50b689c503a14ee8","type":"text","text":"pode ser","x":-2990,"y":1601,"width":124,"height":50,"color":"4"},
 		{"id":"fee32c6a43db1473","type":"text","text":"Se vc n vai ajudar eu n vou me arriscar aqui","x":-3293,"y":1616,"width":224,"height":60,"color":"1"},
-		{"id":"2659f3b5b784e627","type":"text","text":"@d 2000\nVamos tentar outro dia","x":-3293,"y":1474,"width":224,"height":61,"color":"1"},
 		{"id":"e4dc6f4cdfc880eb","type":"text","text":"Vc concordou","x":-3293,"y":1558,"width":159,"height":50,"color":"1"},
 		{"id":"79c95010b49b1735","type":"text","text":"vamos lá","x":-3330,"y":257,"width":124,"height":50,"color":"4"},
 		{"id":"8663ba3ac98075de","type":"text","text":"Aprenda comigo sobrinho","x":-3330,"y":429,"width":180,"height":55,"color":"1"},
@@ -768,7 +767,8 @@
 		{"id":"262b814852d2fc24","type":"text","text":"Seu tio olha para a porta de acesso à área restrita.","x":-273,"y":-2895,"width":176,"height":115,"color":"3"},
 		{"id":"e4c7121f174a1ad3","type":"text","text":"true","x":355,"y":-3100,"width":98,"height":60},
 		{"id":"a53e51fa7c10156d","type":"text","text":"true","x":169,"y":-3203,"width":98,"height":60},
-		{"id":"a28bd5fd5eec16b1","x":166,"y":-3313,"width":104,"height":60,"color":"#ffffff","type":"text","text":"@end"}
+		{"id":"a28bd5fd5eec16b1","x":166,"y":-3313,"width":104,"height":60,"color":"#ffffff","type":"text","text":"@end"},
+		{"id":"2659f3b5b784e627","type":"text","text":"@d 2000\nPodemos tentar outro dia","x":-3293,"y":1461,"width":173,"height":85,"color":"1"}
 	],
 	"edges":[
 		{"id":"9a4b631785456d90","fromNode":"7324b124af41aed1","fromSide":"left","toNode":"204ef9604eb85cc4","toSide":"left"},
