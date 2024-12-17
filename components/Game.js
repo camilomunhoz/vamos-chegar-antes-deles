@@ -179,6 +179,7 @@ export class Game extends GUI {
     writeLocallySaved() {
         this.writePassages(this.history.items)
 
+        const lastPassage = this.history.getLast()
         const nextPassage = this.story.getPassageById(lastPassage.goto[0])
 
         if (nextPassage) {
