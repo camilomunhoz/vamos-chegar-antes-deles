@@ -80,14 +80,17 @@ export class Story {
             const middlewareId = _.find(this.canvas.edges, { fromNode: aud.id }).toNode
             const middleware = _.find(this.canvas.nodes, { id: middlewareId })
             const audioType = middleware.text
-            const audioDestinationId = _.find(this.canvas.edges, { fromNode: middleware.id }).toNode
-            const passage = _.find(this.passages, { id: audioDestinationId })
+            const audioDestinationId = _.find(this.canvas.edges, { fromNode: middleware.id })?.toNode
 
-            passage.audio.push({
-                src: "/obsidian/"+aud.file,
-                type: audioType,
-                loop: audioType === '@soundtrack',
-            })
+            if (audioDestinationId) {
+                const passage = _.find(this.passages, { id: audioDestinationId })
+
+                passage.audio.push({
+                    src: "/obsidian/"+aud.file,
+                    type: audioType,
+                    loop: audioType === '@soundtrack',
+                })
+            }
         }
     }
 
