@@ -4,7 +4,7 @@ export class AudioPlayer {
             label: 'pop',
             type: '@sfx',
             playing: false,
-            howl: new Howl({ src: ['./obsidian/audio/sfx/pop.mp3'], volume: 0.1 })
+            howl: new Howl({ src: ['./obsidian/audio/sfx/pop.mp3'], volume: 0.2 })
         }]
     }
     

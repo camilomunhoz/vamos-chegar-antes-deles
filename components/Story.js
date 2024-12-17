@@ -102,6 +102,7 @@ export class Story {
         }
         else if (node.text === '@end') {
             passage.operation = '@end'
+            passage.goto = []
         }
         else if (node.text.substring(0, 5) === '@set ') {
             passage.operation = '@set'

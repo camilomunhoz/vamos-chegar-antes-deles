@@ -323,7 +323,7 @@ export class Game extends GUI {
                 this.audioPlayer.play({
                     type: '@soundtrack',
                     loop: true,
-                    src: './obsidian/audio/soundtrack/Blue Screen Of Death - The Soundlings.mp3',
+                    src: './obsidian/audio/soundtrack/TheEnd.mp3',
                 })
             }
             const endPassage = {id: 'whatever123', type: 'info', message: {text: 'Fim'}, goto: []}

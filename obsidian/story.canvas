@@ -713,7 +713,6 @@
 		{"id":"ed7bb359cee4afc0","type":"text","text":"tem uma coisa que vi esses dias","x":-1649,"y":1479,"width":180,"height":58,"color":"4"},
 		{"id":"5ca223fe9fa5c557","type":"text","text":"ouviu falar da nova ferramenta de narração da Mehta?","x":-1545,"y":1571,"width":215,"height":90,"color":"4"},
 		{"id":"24edd40ff59092bb","type":"text","text":"@set viuZanetti = true","x":-1861,"y":-184,"width":259,"height":60,"color":"#ffffff"},
-		{"id":"5241c3b50b72eed2","type":"text","text":"@soundtrack","x":-1447,"y":-242,"width":156,"height":60},
 		{"id":"ce17dea47aae5d1c","type":"text","text":"```\nSe espiar Zanetti sem ter passado no laboratório de ervas, apenas grava que viu Zanetti. Nesse caso, o plano será elaborado ao entrar no laboratório pela primeira vez.\n\nSe espiar Zanetti pela primeira vez depois de ter passado pelo laboratório, o plano será elaborado aqui mesmo e executado imediatamente.","x":-2383,"y":-190,"width":372,"height":363},
 		{"id":"ef93a336b557df50","type":"text","text":"Conforme avança na direção indicada, um barulho de teclado de computador fica mais alto.","x":-1333,"y":-159,"width":210,"height":150,"color":"3"},
 		{"id":"ea90a97b65760933","type":"text","text":"Tão me espionando até no banho agora?","x":-170,"y":1436,"width":217,"height":55,"color":"1"},
@@ -745,7 +744,6 @@
 		{"id":"a678cbdcdd659d4b","type":"text","text":"@if estavaPortaSul","x":-1638,"y":-544,"width":198,"height":60,"color":"#ffffff"},
 		{"id":"6395859a8e23caad","type":"text","text":"false","x":-1781,"y":-544,"width":98,"height":60},
 		{"id":"d7e3ab3622c87be6","type":"text","text":"@set estavaPortaSul = false","x":-1230,"y":-544,"width":259,"height":60,"color":"#ffffff"},
-		{"id":"5947235ff4b4e181","type":"file","file":"audio/sfx/typing.mp3","x":-1459,"y":-312,"width":179,"height":42},
 		{"id":"1fd2729a339e1be3","type":"text","text":"@set estavaNorte = false","x":-1458,"y":-434,"width":259,"height":60,"color":"#ffffff"},
 		{"id":"70dceec670c2d343","type":"text","text":"true","x":-1593,"y":-434,"width":98,"height":60},
 		{"id":"f57a287e94ba9128","type":"text","text":"@if estavaNorte","x":-1826,"y":-434,"width":188,"height":60,"color":"#ffffff"},
@@ -924,7 +922,11 @@
 		{"id":"e8a56a6df88351f2","type":"text","text":"@d 3000\nCara cadê vc, eu já saí","x":2333,"y":-3432,"width":142,"height":85,"color":"1"},
 		{"id":"caf38ded9895b8a1","type":"text","text":"Em letras miúdas abaixo das letras grandes, a continuação.","x":1933,"y":-3240,"width":204,"height":115,"color":"3"},
 		{"id":"ff1a5621fde024a3","type":"text","text":"Esses são sérios sintomas de sociopatia.","x":877,"y":-3176,"width":227,"height":55,"color":"3"},
-		{"id":"5bec73a8b4b8430e","type":"text","text":"Procure ajuda.","x":877,"y":-3100,"width":227,"height":50,"color":"3"}
+		{"id":"5bec73a8b4b8430e","type":"text","text":"Procure ajuda.","x":877,"y":-3100,"width":227,"height":50,"color":"3"},
+		{"id":"5241c3b50b72eed2","type":"text","text":"@soundtrack","x":-1447,"y":-242,"width":156,"height":60},
+		{"id":"5947235ff4b4e181","type":"file","file":"audio/sfx/typing.mp3","x":-1459,"y":-312,"width":179,"height":42},
+		{"id":"a106434baf4cbfc4","type":"text","text":"@soundtrack","x":-3309,"y":622,"width":156,"height":60},
+		{"id":"e905629b686bdde7","type":"file","file":"audio/sfx/typing.mp3","x":-3321,"y":552,"width":179,"height":42}
 	],
 	"edges":[
 		{"id":"9a4b631785456d90","fromNode":"7324b124af41aed1","fromSide":"left","toNode":"204ef9604eb85cc4","toSide":"left"},
@@ -1926,6 +1928,8 @@
 		{"id":"cac0fd631b9248f5","fromNode":"e8a56a6df88351f2","fromSide":"left","toNode":"f00317249ece6390","toSide":"right"},
 		{"id":"935b3b0fdd07b120","fromNode":"166cb0be8aaa062b","fromSide":"top","toNode":"59cd3bbde6571261","toSide":"bottom"},
 		{"id":"200157c5d5d01cfa","fromNode":"ff1a5621fde024a3","fromSide":"bottom","toNode":"5bec73a8b4b8430e","toSide":"top"},
-		{"id":"ce024fbef2080c02","fromNode":"5bec73a8b4b8430e","fromSide":"left","toNode":"75acb9edf84c2bb5","toSide":"right"}
+		{"id":"ce024fbef2080c02","fromNode":"5bec73a8b4b8430e","fromSide":"left","toNode":"75acb9edf84c2bb5","toSide":"right"},
+		{"id":"a4dd59b539229c8b","fromNode":"e905629b686bdde7","fromSide":"bottom","toNode":"a106434baf4cbfc4","toSide":"top"},
+		{"id":"b78346fcd0201e03","fromNode":"a106434baf4cbfc4","fromSide":"left","toNode":"8663ba3ac98075de","toSide":"bottom"}
 	]
 }

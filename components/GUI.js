@@ -24,8 +24,8 @@ export class GUI {
 
         $('.btn-start').on('click', () => this.bringEnvironment('game'))
 
-        // this.bringEnvironment('main-menu')
-        $('#game').show()
+        this.bringEnvironment('main-menu')
+        // $('#game').show()
 
         $('.btn-map').on('click', () => this.bringEnvironment('map', 300))
         $('.btn-close-map').on('click', () => this.bringEnvironment('game', 300))
