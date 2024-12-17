@@ -42,7 +42,16 @@ export class Game extends GUI {
         this.audioPlayer.playLastSoundtrack(this.history)
         this.setUndoAllowance()
 
-        if (this.history.items.length === 0) {
+        /**
+         * There is an inconsistency in the way the prop "goto" was made on command passages.
+         * This "<= 1" is an easy workaround for when there is only the "@start" in history,
+         * but it might be breaking everything when a history is load with last passage of
+         * other command types such as "@if" and "@set".
+         * 
+         * No time to investigate nor fix it.
+        */
+        if (this.history.items.length <= 1/*=== 0*/) {
+            this.history.clear() // provisory
             this.step(this.story.start)
         } else {
             this.writeLocallySaved()
@@ -170,7 +179,6 @@ export class Game extends GUI {
     writeLocallySaved() {
         this.writePassages(this.history.items)
 
-        const lastPassage = this.history.getLast()
         const nextPassage = this.story.getPassageById(lastPassage.goto[0])
 
         if (nextPassage) {
